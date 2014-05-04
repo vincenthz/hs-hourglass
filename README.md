@@ -44,7 +44,7 @@ Comparaison with time
 
     ------- with hourglass
     import System.Hourglass
-    ptime <- getCurrentElapsed
+    ptime <- timeCurrent
 
 * getting current date year:
 
@@ -56,7 +56,7 @@ Comparaison with time
     ------- with hourglass
     import System.Hourglass
     import Data.Time
-    currentYear <- dateYear . timeGetDate <$> getCurrentElapsed
+    currentYear <- dateYear . timeGetDate <$> timeCurrent
 
 * creating a time representation of "4th May 1970 15:12:24"
 
