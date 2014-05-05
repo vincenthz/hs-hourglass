@@ -15,7 +15,7 @@
  */
 void hourglass_clock_calendar(struct timespec *timespec)
 {
-#ifdef MACH
+#ifdef __MACH__
 	clock_serv_t cclock;
 	mach_timespec_t mts;
 
