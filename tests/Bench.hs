@@ -4,6 +4,7 @@ module Main (main) where
 
 import Criterion.Main
 import Data.Hourglass
+import System.Hourglass
 import TimeDB
 
 import Data.List (intercalate)
@@ -50,6 +51,7 @@ main = defaultMain
     , bgroup "to-date"     $ concatMap toCalendarDate timePosixDict
     , bgroup "utc-to-date" $ concatMap toCalendarUTC timePosixDict
     , bgroup "to-posix"    $ concatMap toPosix dateDict
+    , bgroup "system"      fromSystem
     ]
   where toHighLevel (posixHourglass, posixTime) =
             [ bench (showH posixHourglass) $ nf timeGetDateTimeOfDay posixHourglass
@@ -77,6 +79,12 @@ main = defaultMain
                 time      (y,m,d,h,mi,s) = let day = T.fromGregorian (fromIntegral y) m d
                                                diffTime = T.secondsToDiffTime $ fromIntegral (h * 3600 + mi * 60 + s)
                                             in T.utcTimeToPOSIXSeconds (T.UTCTime day diffTime)
+
+        fromSystem =
+            [ bench ("hourglass/p")    $ nfIO timeCurrent
+            , bench ("hourglass/ns")   $ nfIO timeCurrentP
+            , bench ("time/posixTime") $ nfIO T.getPOSIXTime
+            ]
 
         showH :: Show a => a -> String
         showH a = "hourglass/" ++ show a
