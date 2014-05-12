@@ -22,9 +22,10 @@ module Data.Hourglass.Format
     , ISO8601_Date(..)
     , ISO8601_DateAndTime(..)
     -- ** Format methods
+    , localTimePrint
     , timePrint
-    , timeParse
-    , timeParseE
+    , localTimeParse
+    , localTimeParseE
     ) where
 
 import Data.Hourglass.Types
@@ -140,14 +141,12 @@ instance TimeFormat ISO8601_DateAndTime where
       where dash = Format_Text '-'
             colon = Format_Text ':'
 
--- | Pretty print time to a string.
--- 
--- The actual output is determined by the format used.
-timePrint :: (TimeFormat format, Timeable t)
-          => format -- ^ the format to use for printing
-          -> t      -- ^ the time to print
-          -> String -- ^ the resulting string
-timePrint fmt t = concatMap fmtToString fmtElems
+printWith :: (TimeFormat format, Timeable t)
+          => format
+          -> TimezoneOffset
+          -> t
+          -> String
+printWith fmt tzOfs@(TimezoneOffset tz) t = concatMap fmtToString fmtElems
   where fmtToString Format_Year     = show (dateYear date)
         fmtToString Format_Year4    = pad4 (dateYear date)
         fmtToString Format_Year2    = pad2 (dateYear date-1900)
@@ -175,23 +174,39 @@ timePrint fmt t = concatMap fmtToString fmtElems
 
         (Elapsed (Seconds unixSecs)) = timeGetElapsed t
         (DateTime date tm) = timeGetDateTimeOfDay t
-        tzOfs@(TimezoneOffset tz) = maybe (TimezoneOffset 0) id $ timeGetTimezone t
 
-        -- format a number to 4 stricly
-        --pad4t v = pad4 (v `mod` 10000)
+-- | Pretty print local time to a string.
+--
+-- The actual output is determined by the format used.
+localTimePrint :: (TimeFormat format, Timeable t)
+               => format           -- ^ the format to use for printing
+               -> LocalTime t      -- ^ the local time to print
+               -> LocalTime String -- ^ the resulting local time string
+localTimePrint fmt lt = fmap (printWith fmt (localTimeGetTimezone lt)) lt
+
+-- | Pretty print time to a string
+--
+-- The actual output is determined by the format used
+timePrint :: (TimeFormat format, Timeable t)
+          => format -- ^ the format to use for printing
+          -> t      -- ^ the global time to print
+          -> String -- ^ the resulting string
+timePrint fmt t = printWith fmt timezone_UTC t
 
 -- | Try parsing a string as time using the format explicitely specified
 --
 -- On failure, the parsing function returns the reason of the failure.
 -- If parsing is successful, return the date parsed with the remaining unparsed string
-timeParseE :: TimeFormat format
-           => format -- ^ the format to use for parsing
-           -> String -- ^ the string to parse
-           -> Either (TimeFormatElem, String) (LocalTime DateTime, String)
-timeParseE fmt timeString = loop ini fmtElems timeString
+localTimeParseE :: TimeFormat format
+                => format -- ^ the format to use for parsing
+                -> String -- ^ the string to parse
+                -> Either (TimeFormatElem, String) (LocalTime DateTime, String)
+localTimeParseE fmt timeString = loop ini fmtElems timeString
   where (TimeFormatString fmtElems) = toFormat fmt
 
-        loop acc []    s  = Right (acc, s)
+        toLocal (dt, tz) = localTime tz dt
+
+        loop acc []    s  = Right (toLocal acc, s)
         loop _   (x:_) [] = Left (x, "empty")
         loop acc (x:xs) s =
             case processOne acc x s of
@@ -272,12 +287,12 @@ timeParseE fmt timeString = loop ini fmtElems timeString
 
         allDigits = and . map isDigit
 
-        ini = LocalTime (DateTime (Date 0 (toEnum 0) 0) (TimeOfDay 0 0 0 0)) (TimezoneOffset 0)
+        ini = (DateTime (Date 0 (toEnum 0) 0) (TimeOfDay 0 0 0 0), TimezoneOffset 0)
 
-        modDT   f (LocalTime dt tz) = LocalTime (f dt) tz
-        modDate f (LocalTime (DateTime d tp) tz) = LocalTime (DateTime (f d) tp) tz
-        modTime f (LocalTime (DateTime d tp) tz) = LocalTime (DateTime d (f tp)) tz
-        modTZ   f (LocalTime dtp tz) = LocalTime dtp (f tz)
+        modDT   f (dt, tz) = (f dt, tz)
+        modDate f (DateTime d tp, tz) = (DateTime (f d) tp, tz)
+        modTime f (DateTime d tp, tz) = (DateTime d (f tp), tz)
+        modTZ   f (dt, tz) = (dt, f tz)
 
         setYear  y (Date _ m d) = Date y m d
         setMonth m (Date y _ d) = Date y m d
@@ -290,8 +305,8 @@ timeParseE fmt timeString = loop ini fmtElems timeString
 --
 -- The error handling is simplified in this case, for more elaborate need
 -- use 'timeParseE'.
-timeParse :: TimeFormat format
-          => format -- ^ the format to use for parsing
-          -> String -- ^ the string to parse
-          -> Maybe (LocalTime DateTime)
-timeParse fmt s = either (const Nothing) (Just . fst) $ timeParseE fmt s
+localTimeParse :: TimeFormat format
+               => format -- ^ the format to use for parsing
+               -> String -- ^ the string to parse
+               -> Maybe (LocalTime DateTime)
+localTimeParse fmt s = either (const Nothing) (Just . fst) $ localTimeParseE fmt s

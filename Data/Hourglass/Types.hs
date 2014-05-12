@@ -153,7 +153,7 @@ timezone_UTC = TimezoneOffset 0
 -- | human date representation using common calendar
 data Date = Date
     { dateYear  :: {-# UNPACK #-} !Int   -- ^ year (Common Era)
-    , dateMonth :: !Month -- ^ month of the year
+    , dateMonth :: !Month                -- ^ month of the year
     , dateDay   :: {-# UNPACK #-} !Int   -- ^ day of the month, between 1 to 31
     } deriving (Show,Eq,Ord,Data,Typeable)
 

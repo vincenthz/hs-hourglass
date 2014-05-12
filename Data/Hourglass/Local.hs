@@ -14,10 +14,12 @@ module Data.Hourglass.Local
     (
     -- * Local time
     -- ** Local time type
-      LocalTime(..)
+      LocalTime
     -- ** Local time creation and manipulation
     , localTime
+    , localTimeUnwrap
     , localTimeToGlobal
+    , localTimeGetTimezone
     , localTimeSetTimezone
     , localTimeConvert
     ) where
@@ -28,8 +30,9 @@ import Data.Hourglass.Diff
 
 -- | Local time representation
 --
--- this is a loca time representation augmented by a timezone
+-- this is a time representation augmented by a timezone
 -- to get back to a global time, the timezoneOffset needed to be added to the local time.
+--
 data LocalTime t = LocalTime
     { localTimeUnwrap      :: t              -- ^ unwrap the LocalTime value. the time value is local.
     , localTimeGetTimezone :: TimezoneOffset -- ^ get the timezone associated with LocalTime
@@ -53,20 +56,12 @@ instance (Ord t, Time t) => Ord (LocalTime t) where
 instance Functor LocalTime where
     fmap f (LocalTime t tz) = LocalTime (f t) tz
 
-instance Time t => Timeable (LocalTime t) where
-    timeGetElapsedP (LocalTime t _)    = timeGetElapsedP t
-    timeGetElapsed  (LocalTime t _)    = timeGetElapsed t
-    timeGetTimezone (LocalTime _ tz)   = Just tz
-    timeGetNanoSeconds (LocalTime t _) = timeGetNanoSeconds t
-
 -- | Create a local time type from a timezone and a time type.
 --
--- the time value is converted to represent local time
+-- the time value is assumed to be local to the timezone offset set,
+-- so no transformation is done.
 localTime :: Time t => TimezoneOffset -> t -> LocalTime t
-localTime tz t = LocalTime (timeConvert t') tz
-  where currentTz = maybe (TimezoneOffset 0) id $ timeGetTimezone t
-        t'        = elapsedTimeAddSecondsP (timeGetElapsedP t) diffTz
-        diffTz    = timezoneOffsetToSeconds tz - timezoneOffsetToSeconds currentTz
+localTime tz t = LocalTime t tz
 
 -- | Get back a global time value
 localTimeToGlobal :: Time t => LocalTime t -> t

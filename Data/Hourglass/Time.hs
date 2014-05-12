@@ -71,13 +71,6 @@ class Timeable t where
     timeGetNanoSeconds :: t -> NanoSeconds
     timeGetNanoSeconds t = ns where ElapsedP _ ns = timeGetElapsedP t
 
-    -- | return the time zone offset in minute.
-    --
-    -- If the time is not a local time representation (offseted by timezone),
-    -- then Nothing should be returned.
-    timeGetTimezone :: t -> Maybe TimezoneOffset
-    timeGetTimezone _ = Nothing
-
 -- | Represent time types that can be created from other time types.
 --
 -- Every conversion happens throught ElapsedP or Elapsed types.
