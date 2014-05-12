@@ -25,6 +25,7 @@ module Data.Hourglass.Types
     -- * Timezone
     , TimezoneOffset(..)
     , timezoneOffsetToSeconds
+    , timezone_UTC
     -- * Computer friendly format
     -- ** Unix elapsed
     , Elapsed(..)
@@ -143,6 +144,10 @@ instance Show TimezoneOffset where
     show (TimezoneOffset tz) =
         concat [(if tz < 0 then "-" else "+"), pad2 tzH, pad2 tzM]
       where (tzH, tzM) = abs tz `divMod` 60
+
+-- | The UTC timezone. offset of 0
+timezone_UTC :: TimezoneOffset
+timezone_UTC = TimezoneOffset 0
 
 -- | human date representation using common calendar
 data Date = Date
