@@ -132,9 +132,10 @@ data WeekDay =
 -- LocalTime t (-300) = t represent a time at UTC-5
 -- LocalTime t (+480) = t represent a time at UTC+8
 --
+-- should be between -11H and +14H
 newtype TimezoneOffset = TimezoneOffset
     { timezoneOffsetToMinutes :: Int -- ^ return the number of minutes
-    } deriving (Eq,Ord,Data,Typeable)
+    } deriving (Eq,Ord,Data,Typeable,NFData)
 
 -- | Return the number of seconds associated with a timezone
 timezoneOffsetToSeconds :: TimezoneOffset -> Seconds
