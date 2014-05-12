@@ -140,7 +140,7 @@ instance Time DateTime where
 -- * 'timeGetElapsed', 'timeGetElapsedP'
 timeConvert :: (Timeable t1, Time t2) => t1 -> t2
 timeConvert t1 = timeFromElapsedP (timeGetElapsedP t1)
-
+{-# INLINE[2] timeConvert #-}
 {-# RULES "timeConvert/ID" timeConvert = id #-}
 {-# RULES "timeConvert/ElapsedP" timeConvert = timeGetElapsedP #-}
 {-# RULES "timeConvert/Elapsed" timeConvert = timeGetElapsed #-}
@@ -150,7 +150,7 @@ timeConvert t1 = timeFromElapsedP (timeGetElapsedP t1)
 -- specialization of 'timeConvert'
 timeGetDate :: Timeable t => t -> Date
 timeGetDate t = d where (DateTime d _) = timeGetDateTimeOfDay t
-
+{-# INLINE[2] timeGetDate #-}
 {-# RULES "timeGetDate/ID" timeGetDate = id #-}
 {-# RULES "timeGetDate/DateTime" timeGetDate = dtDate #-}
 
@@ -159,7 +159,7 @@ timeGetDate t = d where (DateTime d _) = timeGetDateTimeOfDay t
 -- specialization of 'timeConvert'
 timeGetTimeOfDay :: Timeable t => t -> TimeOfDay
 timeGetTimeOfDay t = tod where (DateTime _ tod) = timeGetDateTimeOfDay t
-
+{-# INLINE[2] timeGetTimeOfDay #-}
 {-# RULES "timeGetTimeOfDay/Date" timeGetTimeOfDay = const (TimeOfDay 0 0 0 0) #-}
 {-# RULES "timeGetTimeOfDay/DateTime" timeGetTimeOfDay = dtTime #-}
 
@@ -168,7 +168,7 @@ timeGetTimeOfDay t = tod where (DateTime _ tod) = timeGetDateTimeOfDay t
 -- specialization of 'timeConvert'
 timeGetDateTimeOfDay :: Timeable t => t -> DateTime
 timeGetDateTimeOfDay t = dateTimeFromUnixEpochP $ timeGetElapsedP t
-
+{-# INLINE[2] timeGetDateTimeOfDay #-}
 {-# RULES "timeGetDateTimeOfDay/ID" timeGetDateTimeOfDay = id #-}
 {-# RULES "timeGetDateTimeOfDay/Date" timeGetDateTimeOfDay = flip DateTime (TimeOfDay 0 0 0 0) #-}
 
