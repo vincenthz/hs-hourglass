@@ -14,6 +14,8 @@ module System.Hourglass
     , timeCurrentP
     -- * Current time in human friendly DateTime format
     , dateCurrent
+    , localDateCurrent
+    , localDateCurrentAt
     -- * System timezone
     , timezoneCurrent
     ) where
@@ -21,6 +23,7 @@ module System.Hourglass
 import Control.Applicative
 import Data.Hourglass.Types
 import Data.Hourglass.Time
+import Data.Hourglass.Local
 import Data.Hourglass.Internal (systemGetElapsedP, systemGetElapsed, systemGetTimezone)
 
 -- | Get the current elapsed seconds since epoch
@@ -31,13 +34,21 @@ timeCurrent = systemGetElapsed
 timeCurrentP :: IO ElapsedP
 timeCurrentP = systemGetElapsedP
 
--- | Get the current time
+-- | Get the current global date
 --
 -- This is equivalent to:
 --
 -- > timeGetDateTimeOfDay `fmap` timeCurrentP
 dateCurrent :: IO DateTime
 dateCurrent = timeGetDateTimeOfDay <$> timeCurrentP
+
+-- | Get the localized date by using 'timezoneCurrent' and 'dateCurrent'
+localDateCurrent :: IO (LocalTime DateTime)
+localDateCurrent = localTime <$> timezoneCurrent <*> dateCurrent
+
+-- | Get the localized date at a specific timezone offset.
+localDateCurrentAt :: TimezoneOffset -> IO (LocalTime DateTime)
+localDateCurrentAt tz = localTime tz <$> dateCurrent
 
 -- | Get the current timezone offset
 --
