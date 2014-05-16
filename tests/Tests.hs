@@ -8,12 +8,9 @@ import Control.Applicative
 import Data.Monoid (mempty)
 --import Control.DeepSeq
 
-import Test.Framework (defaultMain, testGroup, Test)
-import Test.Framework.Providers.QuickCheck2 (testProperty)
-import Test.Framework.Providers.HUnit (testCase)
-
-import Test.HUnit hiding (Test)
-import Test.QuickCheck
+import Test.Tasty -- (defaultMain, testGroup, Test)
+import Test.Tasty.QuickCheck
+import Test.Tasty.HUnit
 
 import Data.Word
 import Data.Int
@@ -114,11 +111,11 @@ eq expected got
     | expected == got = True
     | otherwise       = error ("expected: " ++ show expected ++ " got: " ++ show got)
 
-tests knowns =
+tests knowns = testGroup "hourglass"
     [ testGroup "known"
-        [ testGroup "calendar conv" (map toCalendarTest $ zip [1..] (map tuple12 knowns))
-        , testGroup "seconds conv" (map toSecondTest $ zip [1..] (map tuple12 knowns))
-        , testGroup "weekday" (map toWeekDayTest $ zip [1..] (map tuple13 knowns))
+        [ testGroup "calendar conv" (map toCalendarTest $ zip eint (map tuple12 knowns))
+        , testGroup "seconds conv" (map toSecondTest $ zip eint (map tuple12 knowns))
+        , testGroup "weekday" (map toWeekDayTest $ zip eint (map tuple13 knowns))
         ]
     , testGroup "conversion"
         [ testProperty "calendar" $ \(e :: Elapsed) ->
@@ -178,15 +175,15 @@ tests knowns =
                 _                     -> error "Cannot parse timezone"
         ]
     ]
-  where toCalendarTest :: (Int, (Elapsed, DateTime)) -> Test
-        toCalendarTest (i, (us, dt)) =
+  where toCalendarTest (i, (us, dt)) =
             testCase (show i) (dt @=? timeGetDateTimeOfDay us)
-        toSecondTest :: (Int, (Elapsed, DateTime)) -> Test
         toSecondTest (i, (us@(Elapsed (Seconds s)), dt)) =
             testCase (show i ++ "-" ++ show s ++ "s") (us @=? timeGetElapsed dt)
-        toWeekDayTest :: (Int, (Elapsed, WeekDay)) -> Test
         toWeekDayTest (i, (us, wd)) =
             testCase (show i ++ "-" ++ show wd) (wd @=? getWeekDay (dtDate $ timeGetDateTimeOfDay us))
+
+        eint :: [Int]
+        eint = [1..]
 
         tuple12 (a,b,_,_) = (a,b)
         tuple13 (a,_,b,_) = (a,b)
