@@ -12,7 +12,7 @@
 -- and int types for years.
 --
 -- Most units use the unix epoch referential, but by no means reduce portability.
--- the unix referencial works under the Windows platform or any other platforms.
+-- the unix referential works under the Windows platform or any other platforms.
 --
 module Data.Hourglass.Types
     (
@@ -61,7 +61,7 @@ instance TimeInterval NanoSeconds where
     toSeconds (NanoSeconds ns) = Seconds (ns `div` 1000000000)
     fromSeconds (Seconds s) = (NanoSeconds (s * 1000000000), 0)
 
--- | Number of seconds without a referencial.
+-- | Number of seconds without a referential.
 --
 -- Can hold a number between [-2^63,2^63-1], which should
 -- be good for some billions of years.
@@ -79,7 +79,7 @@ instance TimeInterval Seconds where
     toSeconds   = id
     fromSeconds s = (s,0)
 
--- | Number of minutes without a referencial.
+-- | Number of minutes without a referential.
 newtype Minutes = Minutes Int64
     deriving (Read,Eq,Ord,Enum,Num,Real,Integral,Data,Typeable,NFData)
 
@@ -91,7 +91,7 @@ instance TimeInterval Minutes where
     fromSeconds (Seconds s) = (Minutes m, Seconds s')
       where (m, s') = s `divMod` 60
 
--- | Number of hours without a referencial.
+-- | Number of hours without a referential.
 newtype Hours = Hours Int64
     deriving (Read,Eq,Ord,Enum,Num,Real,Integral,Data,Typeable,NFData)
 
