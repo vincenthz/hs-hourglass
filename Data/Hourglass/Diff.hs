@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveDataTypeable #-}
 -- |
 -- Module      : Data.Hourglass.Diff
 -- License     : BSD-style
@@ -8,88 +9,90 @@
 -- time arithmetic methods
 --
 module Data.Hourglass.Diff
-    ( TimeDiff(..)
-    , normalizeTimeDiff
-    , dateTimeAdd
+    ( Duration(..)
+    , Period(..)
+    , durationNormalize
+    , durationFlatten
     , elapsedTimeAddSeconds
     , elapsedTimeAddSecondsP
-    , elapsedTimeAdd
-    , elapsedTimeAddP
+    , dateAddPeriod
     ) where
 
-import Data.Int
+import Data.Data
 import Data.Monoid
 import Data.Hourglass.Types
 import Data.Hourglass.Calendar
+import Control.DeepSeq
 
--- | A simple Time difference structure.
+-- | An amount of conceptual calendar time in terms of years, months and days.
 --
--- A null time difference can be created with 'mempty' and
--- the structures can be combined with 'mappend' or 'mconcat'.
+-- This allow calendar manipulation, representing things like days and months
+-- irrespective on how long those are related to timezone and daylight changes.
 --
--- Example:
---
--- > mempty { timeDiffMonths = 1 } `mappend` mempty { timeDiffSeconds = 24 }
---
-data TimeDiff = TimeDiff
-    { timeDiffYears   :: Int -- ^ number of years
-    , timeDiffMonths  :: Int -- ^ number of months
-    , timeDiffDays    :: Int -- ^ number of days
-    , timeDiffHours   :: Int -- ^ number of hours
-    , timeDiffMinutes :: Int -- ^ number of minutes
-    , timeDiffSeconds :: Int -- ^ number of seconds
-    , timeDiffNs      :: Int -- ^ number of nanoseconds
-    } deriving (Show,Eq)
+-- See 'Duration' for the time-based equivalent to this class.
+data Period = Period
+    { periodYears  :: !Int
+    , periodMonths :: !Int
+    , periodDays   :: !Int
+    } deriving (Read,Eq,Ord,Data,Typeable)
 
--- | simplify a time difference
-toSimplerTimeDiff :: TimeDiff -> (Int, Int, Seconds, NanoSeconds)
-toSimplerTimeDiff (TimeDiff y m d h mi s ns) =
-    (y, m, Seconds accSecs, NanoSeconds ns')
-  where accSecs = (((i64 d * 24) + i64 h) * 60 + i64 mi) * 60 + i64 s + i64 sacc
+instance NFData Period where
+    rnf (Period y m d) = y `seq` m `seq` d `seq` ()
+instance Monoid Period where
+    mempty = Period 0 0 0
+    mappend (Period y1 m1 d1) (Period y2 m2 d2) =
+        Period (y1+y2) (m1+m2) (d1+d2)
+
+-- | An amount of time in terms of constant value like hours (3600 seconds),
+-- minutes (60 seconds), seconds and nanoseconds.
+data Duration = Duration
+    { durationHours   :: !Hours       -- ^ number of hours
+    , durationMinutes :: !Minutes     -- ^ number of minutes
+    , durationSeconds :: !Seconds     -- ^ number of seconds
+    , durationNs      :: !NanoSeconds -- ^ number of nanoseconds
+    } deriving (Read,Eq,Ord,Data,Typeable)
+
+instance NFData Duration where
+    rnf (Duration h m s ns) = h `seq` m `seq` s `seq` ns `seq` ()
+instance Monoid Duration where
+    mempty = Duration 0 0 0 0
+    mappend (Duration h1 m1 s1 ns1) (Duration h2 m2 s2 ns2) =
+        Duration (h1+h2) (m1+m2) (s1+s2) (ns1+ns2)
+instance TimeInterval Duration where
+    fromSeconds s = (durationNormalize (Duration 0 0 s 0), 0)
+    toSeconds d   = fst $ durationFlatten d
+
+durationFlatten :: Duration -> (Seconds, NanoSeconds)
+durationFlatten (Duration h m s (NanoSeconds ns)) =
+    (toSeconds h + toSeconds m + s + Seconds sacc, NanoSeconds ns')
+  where (sacc, ns') = ns `divMod` 1000000000
+
+-- | Normalize all fields to represent the same value
+-- with the biggest units possible.
+--
+-- For example, 62 minutes is normalized as 1h 2minutes
+durationNormalize :: Duration -> Duration
+durationNormalize (Duration (Hours h) (Minutes mi) (Seconds s) (NanoSeconds ns)) =
+    Duration (Hours (h+hacc)) (Minutes mi') (Seconds s') (NanoSeconds ns')
+  where (hacc, mi') = (mi+miacc) `divMod` 60
+        (miacc, s') = (s+sacc) `divMod` 60
         (sacc, ns') = ns `divMod` 1000000000
 
-        i64 :: Int -> Int64
-        i64 = fromIntegral
-
-instance Monoid TimeDiff where
-    mempty  = TimeDiff 0 0 0 0 0 0 0
-    mappend (TimeDiff f1 f2 f3 f4 f5 f6 f7) (TimeDiff g1 g2 g3 g4 g5 g6 g7) =
-        TimeDiff (f1+g1) (f2+g2) (f3+g3) (f4+g4) (f5+g5) (f6+g6) (f7+g7)
-
--- | Normalize all constant bounded fields,
--- i.e. all except days since we don't know to which
--- months they apply.
-normalizeTimeDiff :: TimeDiff -> TimeDiff
-normalizeTimeDiff (TimeDiff y m d h mi s ns) =
-    TimeDiff y' m' (d+dacc) h' mi' s' ns'
+-- | add a period of time to a date
+dateAddPeriod :: Date -> Period -> Date
+dateAddPeriod (Date yOrig mOrig dOrig) (Period yDiff mDiff dDiff) =
+    loop (yOrig + yDiff + yDiffAcc) mStartPos (dOrig+dDiff)
+    --Date (Date (y+yDiff+yDiffAcc) (toEnum mNew) dOrig)
   where
-    y'          = y + macc
-    (macc, m')  = m `divMod` 12
-    (dacc, h')  = (h+hacc) `divMod` 24
-    (hacc, mi') = (mi+miacc) `divMod` 60
-    (miacc, s') = (s+sacc) `divMod` 60
-    (sacc, ns') = ns `divMod` 1000000000
-
--- | relatively add some years and months to a date
-dateTimeAddYM :: DateTime -> (Int, Int) -> DateTime
-dateTimeAddYM (DateTime (Date y m d) tod) (yDiff, mDiff) =
-    DateTime (Date (y+yDiff+yDiffAcc) (toEnum mNew) d) tod
-  where
-    (yDiffAcc,mNew) = (fromEnum m + mDiff) `divMod` 12
-
--- | add to a DateTime
-dateTimeAdd :: DateTime -> TimeDiff -> DateTime
-dateTimeAdd dt td =
-    dateTimeFromUnixEpoch $ elapsedTimeAdd (dateTimeToUnixEpoch dt) td
-
--- | add a (year,month,seconds) to an Elapsed
-elapsedTimeAddSimple :: Elapsed -> (Int, Int, Seconds) -> Elapsed
-elapsedTimeAddSimple e (y,m,secs)
-    | y == 0 && m == 0 = e'
-    | otherwise        =
-        let dt = dateTimeFromUnixEpoch e'
-         in dateTimeToUnixEpoch $ dateTimeAddYM dt (y, m)
-  where e' = e + Elapsed secs
+    (yDiffAcc,mStartPos) = (fromEnum mOrig + mDiff) `divMod` 12
+    loop y m d
+        | d < dMonth = Date y (toEnum m) d
+        | otherwise  =
+            let newDiff = d - dMonth
+             in if m == 12
+                    then loop (y+1) 0 newDiff
+                    else loop y (m+1) newDiff
+      where dMonth = daysInMonth y (toEnum m)
 
 -- | Add a number of seconds to an Elapsed type
 elapsedTimeAddSeconds :: Elapsed -> Seconds -> Elapsed
@@ -98,18 +101,6 @@ elapsedTimeAddSeconds (Elapsed s1) s2 = Elapsed (s1+s2)
 -- | Add a number of seconds to an ElapsedP type
 elapsedTimeAddSecondsP :: ElapsedP -> Seconds -> ElapsedP
 elapsedTimeAddSecondsP (ElapsedP (Elapsed s1) ns1) s2 = ElapsedP (Elapsed (s1+s2)) ns1
-
--- | add a time difference
-elapsedTimeAdd :: Elapsed -> TimeDiff -> Elapsed
-elapsedTimeAdd e td = elapsedTimeAddSimple e (y,m,secs)
-  where (y,m,secs,_) = toSimplerTimeDiff td
-
--- | add a time difference with nanoseconds precisions
-elapsedTimeAddP :: ElapsedP -> TimeDiff -> ElapsedP
-elapsedTimeAddP (ElapsedP e (NanoSeconds ns)) td = ElapsedP e' ns'
-  where (y,m,secs,ns') = toSimplerTimeDiff td'
-        e' = elapsedTimeAddSimple e (y,m,secs)
-        td' = td { timeDiffNs = timeDiffNs td + ns }
 
 {- disabled for warning purpose. to be implemented
 
@@ -137,6 +128,8 @@ elapsedTimeAddP (ElapsedP e (NanoSeconds ns)) td = ElapsedP e' ns'
 --
 timeDiffFromDuration :: String -> TimeDiff
 timeDiffFromDuration _ = undefined
+
+timeDiffFromString :: String -> (
 
 -- | Human description string to time diff
 --

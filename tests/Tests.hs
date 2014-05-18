@@ -8,7 +8,7 @@ import Control.Applicative
 import Data.Monoid (mempty)
 --import Control.DeepSeq
 
-import Test.Tasty -- (defaultMain, testGroup, Test)
+import Test.Tasty
 import Test.Tasty.QuickCheck
 import Test.Tasty.HUnit
 

@@ -11,6 +11,7 @@ module Data.Hourglass.Calendar
     ( isLeapYear
     , getWeekDay
     , getDayOfTheYear
+    , daysInMonth
     , dateToUnixEpoch
     , dateFromUnixEpoch
     , todToSeconds
@@ -44,14 +45,12 @@ daysUntilMonth y m
   where normalYears = [ 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 ]
         leapYears   = [ 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366 ]
 
-{-
 -- | Return the number of days in a month.
 daysInMonth :: Int -> Month -> Int
 daysInMonth y m
     | m == February && isLeapYear y = 29
     | otherwise                     = days !! fromEnum m
   where days = [31,28,31,30,31,30,31,31,30,31,30,31]
--}
 
 -- | return the day of the year where Jan 1 is 0
 --
@@ -72,7 +71,7 @@ daysOfDate (Date y m d) = daysBeforeYear y + daysUntilMonth y m + d
 dateToUnixEpoch :: Date -> Elapsed
 dateToUnixEpoch date = Elapsed $ Seconds (fromIntegral (daysOfDate date - epochDays) * secondsPerDay)
   where epochDays     = 719163
-        secondsPerDay = 86400
+        secondsPerDay = 86400 -- julian day is 24h
 
 -- | Return the Date associated with the unix epoch
 dateFromUnixEpoch :: Elapsed -> Date
@@ -80,8 +79,7 @@ dateFromUnixEpoch e = dtDate $ dateTimeFromUnixEpoch e
 
 -- | Return the number of seconds from a time structure
 todToSeconds :: TimeOfDay -> Seconds
-todToSeconds (TimeOfDay h m s _) =
-    fromIntegral h * 3600 + fromIntegral m * 60 + fromIntegral s
+todToSeconds (TimeOfDay h m s _) = toSeconds h + toSeconds m + s
 
 -- | Return the number of seconds to unix epoch of a date time
 dateTimeToUnixEpoch :: DateTime -> Elapsed

@@ -30,7 +30,8 @@ module Data.Hourglass.Time
     , timeGetTimeOfDay
 
     -- * Arithmetic
-    , TimeDiff(..)
+    , Duration(..)
+    , TimeInterval(..)
     , timeAdd
     , timeDiff
     , timeDiffP
@@ -165,13 +166,13 @@ timeGetDateTimeOfDay t = dateTimeFromUnixEpochP $ timeGetElapsedP t
 {-# RULES "timeGetDateTimeOfDay/ID" timeGetDateTimeOfDay = id #-}
 {-# RULES "timeGetDateTimeOfDay/Date" timeGetDateTimeOfDay = flip DateTime (TimeOfDay 0 0 0 0) #-}
 
--- | add some values with time units to a time representation and returns this new time representation
+-- | add some time interval to a time representation and returns this new time representation
 --
 -- example:
 --
--- > t1 `timeAdd` mempty { timeDiffHours = 12 }
-timeAdd :: Time t => t -> TimeDiff -> t
-timeAdd t td = timeFromElapsedP $ elapsedTimeAddP (timeGetElapsedP t) td
+-- > t1 `timeAdd` mempty { durationHours = 12 }
+timeAdd :: (Time t, TimeInterval ti) => t -> ti -> t
+timeAdd t ti = timeFromElapsedP $ elapsedTimeAddSecondsP (timeGetElapsedP t) (toSeconds ti)
 
 -- | Get the difference in seconds between two time representation
 --

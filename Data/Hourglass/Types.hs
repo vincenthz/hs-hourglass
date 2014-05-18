@@ -19,6 +19,9 @@ module Data.Hourglass.Types
     -- * Time units
       NanoSeconds(..)
     , Seconds(..)
+    , Minutes(..)
+    , Hours(..)
+    , TimeInterval(..)
     -- * Time enumeration
     , Month(..)
     , WeekDay(..)
@@ -43,12 +46,20 @@ import Data.Ratio
 import Control.DeepSeq
 import Data.Hourglass.Utils (pad2)
 
+class TimeInterval i where
+    toSeconds   :: i -> Seconds
+    fromSeconds :: Seconds -> (i, Seconds)
+
 -- | Nanoseconds
-newtype NanoSeconds = NanoSeconds Int
+newtype NanoSeconds = NanoSeconds Int64
     deriving (Read,Eq,Ord,Num,Data,Typeable,NFData)
 
 instance Show NanoSeconds where
     show (NanoSeconds v) = shows v "ns"
+
+instance TimeInterval NanoSeconds where
+    toSeconds (NanoSeconds ns) = Seconds (ns `div` 1000000000)
+    fromSeconds (Seconds s) = (NanoSeconds (s * 1000000000), 0)
 
 -- | Number of seconds without a referencial.
 --
@@ -59,10 +70,38 @@ instance Show NanoSeconds where
 -- currently used, seconds should be in the range [-2^55,2^55-1],
 -- which is good for only 1 billion of year.
 newtype Seconds = Seconds Int64
-    deriving (Read,Eq,Ord,Num,Data,Typeable,NFData)
+    deriving (Read,Eq,Ord,Enum,Num,Real,Integral,Data,Typeable,NFData)
 
 instance Show Seconds where
     show (Seconds s) = shows s "s"
+
+instance TimeInterval Seconds where
+    toSeconds   = id
+    fromSeconds s = (s,0)
+
+-- | Number of minutes without a referencial.
+newtype Minutes = Minutes Int64
+    deriving (Read,Eq,Ord,Enum,Num,Real,Integral,Data,Typeable,NFData)
+
+instance Show Minutes where
+    show (Minutes s) = shows s "m"
+
+instance TimeInterval Minutes where
+    toSeconds (Minutes m)   = Seconds (m * 60)
+    fromSeconds (Seconds s) = (Minutes m, Seconds s')
+      where (m, s') = s `divMod` 60
+
+-- | Number of hours without a referencial.
+newtype Hours = Hours Int64
+    deriving (Read,Eq,Ord,Enum,Num,Real,Integral,Data,Typeable,NFData)
+
+instance Show Hours where
+    show (Hours s) = shows s "h"
+
+instance TimeInterval Hours where
+    toSeconds (Hours h)     = Seconds (h * 3600)
+    fromSeconds (Seconds s) = (Hours h, Seconds s')
+      where (h, s') = s `divMod` 3600
 
 -- | A number of seconds elapsed since the unix epoch.
 newtype Elapsed = Elapsed Seconds
@@ -162,9 +201,9 @@ instance NFData Date where
 
 -- | human time representation of hour, minutes, seconds in a day.
 data TimeOfDay = TimeOfDay
-    { todHour :: {-# UNPACK #-} !Int   -- ^ hours, between 0 and 23
-    , todMin  :: {-# UNPACK #-} !Int   -- ^ minutes, between 0 and 59
-    , todSec  :: {-# UNPACK #-} !Int   -- ^ seconds, between 0 and 59. 60 when having leap second */
+    { todHour :: {-# UNPACK #-} !Hours   -- ^ hours, between 0 and 23
+    , todMin  :: {-# UNPACK #-} !Minutes -- ^ minutes, between 0 and 59
+    , todSec  :: {-# UNPACK #-} !Seconds -- ^ seconds, between 0 and 59. 60 when having leap second */
     , todNSec :: {-# UNPACK #-} !NanoSeconds -- ^ nanoseconds, between 0 and 999999999 */
     } deriving (Show,Eq,Ord,Data,Typeable)
 
