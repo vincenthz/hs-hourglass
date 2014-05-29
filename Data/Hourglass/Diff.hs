@@ -99,7 +99,8 @@ elapsedTimeAddSeconds (Elapsed s1) s2 = Elapsed (s1+s2)
 
 -- | Add a number of seconds to an ElapsedP type
 elapsedTimeAddSecondsP :: ElapsedP -> Seconds -> ElapsedP
-elapsedTimeAddSecondsP (ElapsedP (Elapsed s1) ns1) s2 = ElapsedP (Elapsed (s1+s2)) ns1
+elapsedTimeAddSecondsP (ElapsedP (Elapsed s1) ns1) s2 =
+    ElapsedP (Elapsed (s1+s2)) ns1
 
 {- disabled for warning purpose. to be implemented
 
