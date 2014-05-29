@@ -82,7 +82,6 @@ durationNormalize (Duration (Hours h) (Minutes mi) (Seconds s) (NanoSeconds ns))
 dateAddPeriod :: Date -> Period -> Date
 dateAddPeriod (Date yOrig mOrig dOrig) (Period yDiff mDiff dDiff) =
     loop (yOrig + yDiff + yDiffAcc) mStartPos (dOrig+dDiff)
-    --Date (Date (y+yDiff+yDiffAcc) (toEnum mNew) dOrig)
   where
     (yDiffAcc,mStartPos) = (fromEnum mOrig + mDiff) `divMod` 12
     loop y m d
