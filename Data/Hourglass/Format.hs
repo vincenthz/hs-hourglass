@@ -22,8 +22,10 @@ module Data.Hourglass.Format
     , ISO8601_Date(..)
     , ISO8601_DateAndTime(..)
     -- ** Format methods
-    , localTimePrint
     , timePrint
+    , timeParse
+    , timeParseE
+    , localTimePrint
     , localTimeParse
     , localTimeParseE
     ) where
@@ -310,3 +312,13 @@ localTimeParse :: TimeFormat format
                -> String -- ^ the string to parse
                -> Maybe (LocalTime DateTime)
 localTimeParse fmt s = either (const Nothing) (Just . fst) $ localTimeParseE fmt s
+
+-- | like 'localTimeParseE' but the time value is automatically converted to global time.
+timeParseE :: TimeFormat format => format -> String
+           -> Either (TimeFormatElem, String) (DateTime, String)
+timeParseE fmt timeString = either Left (\(d,s) -> Right (localTimeToGlobal d, s))
+                          $ localTimeParseE fmt timeString
+
+-- | Just like 'localTimeParse' but the time is automatically converted to global time.
+timeParse :: TimeFormat format => format -> String -> Maybe DateTime
+timeParse fmt s = localTimeToGlobal `fmap` localTimeParse fmt s

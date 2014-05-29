@@ -31,6 +31,7 @@ module Data.Hourglass.Time
 
     -- * Arithmetic
     , Duration(..)
+    , Period(..)
     , TimeInterval(..)
     , timeAdd
     , timeDiff

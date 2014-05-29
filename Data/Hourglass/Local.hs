@@ -19,6 +19,7 @@ module Data.Hourglass.Local
     , localTime
     , localTimeUnwrap
     , localTimeToGlobal
+    , localTimeFromGlobal
     , localTimeGetTimezone
     , localTimeSetTimezone
     , localTimeConvert
@@ -58,15 +59,21 @@ instance Functor LocalTime where
 
 -- | Create a local time type from a timezone and a time type.
 --
--- the time value is assumed to be local to the timezone offset set,
+-- The time value is assumed to be local to the timezone offset set,
 -- so no transformation is done.
 localTime :: Time t => TimezoneOffset -> t -> LocalTime t
 localTime tz t = LocalTime t tz
 
 -- | Get back a global time value
 localTimeToGlobal :: Time t => LocalTime t -> t
-localTimeToGlobal (LocalTime local tz) = timeConvert $ elapsedTimeAddSecondsP (timeGetElapsedP local) tzSecs
+localTimeToGlobal (LocalTime local tz)
+    | tz == TimezoneOffset 0 = local
+    | otherwise              = timeConvert $ elapsedTimeAddSecondsP (timeGetElapsedP local) tzSecs
   where tzSecs = negate $ timezoneOffsetToSeconds tz
+
+-- | create a local time value from a global one
+localTimeFromGlobal :: Time t => t -> LocalTime t
+localTimeFromGlobal t = localTime (TimezoneOffset 0) t
 
 -- | Change the timezone, and adjust the local value to represent the new local value.
 localTimeSetTimezone :: Time t => TimezoneOffset -> LocalTime t -> LocalTime t
