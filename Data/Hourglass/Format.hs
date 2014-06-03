@@ -305,8 +305,9 @@ localTimeParseE fmt timeString = loop ini fmtElems timeString
 
 -- | Try parsing a string as time using the format explicitely specified
 --
--- The error handling is simplified in this case, for more elaborate need
--- use 'timeParseE'.
+-- Unparsed characters are ignored and the error handling is simplified
+--
+-- for more elaborate need use 'localTimeParseE'.
 localTimeParse :: TimeFormat format
                => format -- ^ the format to use for parsing
                -> String -- ^ the string to parse
