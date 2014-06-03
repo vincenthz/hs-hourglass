@@ -46,6 +46,8 @@ import Data.Ratio
 import Control.DeepSeq
 import Data.Hourglass.Utils (pad2)
 
+-- | Represent any time interval that has an
+-- equivalent value to a number of seconds.
 class TimeInterval i where
     toSeconds   :: i -> Seconds
     fromSeconds :: Seconds -> (i, Seconds)
