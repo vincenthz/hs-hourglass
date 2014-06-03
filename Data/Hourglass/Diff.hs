@@ -62,6 +62,7 @@ instance TimeInterval Duration where
     fromSeconds s = (durationNormalize (Duration 0 0 s 0), 0)
     toSeconds d   = fst $ durationFlatten d
 
+-- | Flatten a duration to a number of seconds, nanoseconds
 durationFlatten :: Duration -> (Seconds, NanoSeconds)
 durationFlatten (Duration h m s (NanoSeconds ns)) =
     (toSeconds h + toSeconds m + s + Seconds sacc, NanoSeconds ns')
