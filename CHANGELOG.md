@@ -1,4 +1,4 @@
-## Version WIP
+## Version 0.2.0 (3 Jun 2014)
 
 - use tasty to replace test-framework
 - add some inlining pragma to tentatively deal with rules properly.
