@@ -181,10 +181,10 @@ printWith fmt tzOfs@(TimezoneOffset tz) t = concatMap fmtToString fmtElems
 --
 -- The actual output is determined by the format used.
 localTimePrint :: (TimeFormat format, Timeable t)
-               => format           -- ^ the format to use for printing
-               -> LocalTime t      -- ^ the local time to print
-               -> LocalTime String -- ^ the resulting local time string
-localTimePrint fmt lt = fmap (printWith fmt (localTimeGetTimezone lt)) lt
+               => format      -- ^ the format to use for printing
+               -> LocalTime t -- ^ the local time to print
+               -> String      -- ^ the resulting local time string
+localTimePrint fmt lt = localTimeUnwrap $ fmap (printWith fmt (localTimeGetTimezone lt)) lt
 
 -- | Pretty print time to a string
 --
