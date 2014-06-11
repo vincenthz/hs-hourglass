@@ -1,3 +1,13 @@
+## Version 0.2.2 (11 Jun 2014)
+
+- wrap system time in local time correctly
+
+## Version 0.2.1 (10 Jun 2014)
+
+- unwrap local time structure when doing a localTimePrint
+- properly show hours, minutes and seconds in format print.
+- add some description of new calls.
+
 ## Version 0.2.0 (3 Jun 2014)
 
 - use tasty to replace test-framework
