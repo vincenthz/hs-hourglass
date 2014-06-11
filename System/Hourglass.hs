@@ -44,11 +44,12 @@ dateCurrent = timeGetDateTimeOfDay <$> timeCurrentP
 
 -- | Get the localized date by using 'timezoneCurrent' and 'dateCurrent'
 localDateCurrent :: IO (LocalTime DateTime)
-localDateCurrent = localTime <$> timezoneCurrent <*> dateCurrent
+localDateCurrent = localTimeSetTimezone <$> timezoneCurrent
+                                        <*> (localTimeFromGlobal <$> dateCurrent)
 
 -- | Get the localized date at a specific timezone offset.
 localDateCurrentAt :: TimezoneOffset -> IO (LocalTime DateTime)
-localDateCurrentAt tz = localTime tz <$> dateCurrent
+localDateCurrentAt tz = localTimeSetTimezone tz . localTimeFromGlobal <$> dateCurrent
 
 -- | Get the current timezone offset
 --
