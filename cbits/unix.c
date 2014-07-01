@@ -2,7 +2,7 @@
  * lowlevel binder for macosx and 
  */
 #include <time.h>
-#ifdef __MACH__
+#if defined __MACH__ && !defined __GNU__
 #include <mach/clock.h>
 #include <mach/mach.h>
 #endif
@@ -15,7 +15,7 @@
  */
 void hourglass_clock_calendar(struct timespec *timespec)
 {
-#ifdef __MACH__
+#if defined __MACH__ && !defined __GNU__
 	clock_serv_t cclock;
 	mach_timespec_t mts;
 
