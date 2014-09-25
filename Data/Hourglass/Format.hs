@@ -53,10 +53,10 @@ data TimeFormatElem =
     | Format_Minute     -- ^ minutes (0 to 59)
     | Format_Second     -- ^ seconds (0 to 59, 60 for leap seconds)
     | Format_UnixSecond -- ^ number of seconds since 1 jan 1970. unix epoch.
-    {-
-    | Format_MilliSecond
-    | Format_MicroSecond
-    | Format_NanoSecond -}
+    | Format_MilliSecond -- ^ Milliseconds (000 to 999)
+    | Format_MicroSecond -- ^ MicroSeconds (000000 to 999999)
+    | Format_NanoSecond  -- ^ NanoSeconds (000000000 to 999999999)
+    | Format_Precision Int -- ^ sub seconds display with a precision of N digits. with N between 1 and 9
     | Format_TimezoneName   -- ^ timezone name (e.g. GMT, PST). not implemented yet
     -- | Format_TimezoneOffset -- ^ timeoffset offset (+02:00)
     | Format_TzHM_Colon -- ^ timeoffset offset with colon (+02:00)
@@ -118,6 +118,19 @@ instance TimeFormat String where
             toFormatElem ('D':'D':r)         = Format_Day2   : toFormatElem r
             toFormatElem ('H':r)             = Format_Hour   : toFormatElem r
             toFormatElem ('S':r)             = Format_Second : toFormatElem r
+            toFormatElem ('m':'s':r)         = Format_MilliSecond : toFormatElem r
+            toFormatElem ('u':'s':r)         = Format_MicroSecond : toFormatElem r
+            toFormatElem ('μ':r)             = Format_MicroSecond : toFormatElem r
+            toFormatElem ('n':'s':r)         = Format_NanoSecond : toFormatElem r
+            toFormatElem ('p':'1':r)         = Format_Precision 1 : toFormatElem r
+            toFormatElem ('p':'2':r)         = Format_Precision 2 : toFormatElem r
+            toFormatElem ('p':'3':r)         = Format_Precision 3 : toFormatElem r
+            toFormatElem ('p':'4':r)         = Format_Precision 4 : toFormatElem r
+            toFormatElem ('p':'5':r)         = Format_Precision 5 : toFormatElem r
+            toFormatElem ('p':'6':r)         = Format_Precision 6 : toFormatElem r
+            toFormatElem ('p':'7':r)         = Format_Precision 7 : toFormatElem r
+            toFormatElem ('p':'8':r)         = Format_Precision 8 : toFormatElem r
+            toFormatElem ('p':'9':r)         = Format_Precision 9 : toFormatElem r
             -----------------------------------------------------------
             toFormatElem ('E':'P':'O':'C':'H':r) = Format_UnixSecond : toFormatElem r
             -----------------------------------------------------------
@@ -160,6 +173,12 @@ printWith fmt tzOfs@(TimezoneOffset tz) t = concatMap fmtToString fmtElems
         fmtToString Format_Hour     = pad2 (fromIntegral (todHour tm) :: Int)
         fmtToString Format_Minute   = pad2 (fromIntegral (todMin tm) :: Int)
         fmtToString Format_Second   = pad2 (fromIntegral (todSec tm) :: Int)
+        fmtToString Format_MilliSecond = padN 3 (ns `div` 1000000)
+        fmtToString Format_MicroSecond = padN 3 ((ns `div` 1000) `mod` 1000)
+        fmtToString Format_NanoSecond = padN 3 (ns `mod` 1000)
+        fmtToString (Format_Precision n)
+            | n >= 1 && n <= 9 = padN n (ns `div` (10 ^ (9 - n)))
+            | otherwise        = error "invalid precision format"
         fmtToString Format_UnixSecond = show unixSecs
         fmtToString Format_TimezoneName   = "" --
         fmtToString Format_Tz_Offset = show tz
@@ -176,6 +195,7 @@ printWith fmt tzOfs@(TimezoneOffset tz) t = concatMap fmtToString fmtElems
 
         (Elapsed (Seconds unixSecs)) = timeGetElapsed t
         (DateTime date tm) = timeGetDateTimeOfDay t
+        (NanoSeconds ns) = timeGetNanoSeconds t
 
 -- | Pretty print local time to a string.
 --
@@ -237,6 +257,14 @@ localTimeParseE fmt timeString = loop ini fmtElems timeString
             onSuccess (\mi -> modTime (setMin mi) acc) $ is2Digit s
         processOne acc Format_Second s =
             onSuccess (\sec -> modTime (setSec sec) acc) $ is2Digit s
+        processOne acc Format_MilliSecond s =
+            onSuccess (\ms -> modTime (setNsMask (6,3) ms) acc) $ isNDigit 3 s
+        processOne acc Format_MicroSecond s =
+            onSuccess (\us -> modTime (setNsMask (3,3) us) acc) $ isNDigit 3 s
+        processOne acc Format_NanoSecond s =
+            onSuccess (\ns -> modTime (setNsMask (0,3) ns) acc) $ isNDigit 3 s
+        processOne acc (Format_Precision p) s =
+            onSuccess (\num -> modTime (setNS num) acc) $ isNDigit p s 
         processOne acc Format_UnixSecond s =
             onSuccess (\sec ->
                 let newDate = dateTimeFromUnixEpochP $ flip ElapsedP 0 $ Elapsed $ Seconds sec
@@ -281,6 +309,12 @@ localTimeParseE fmt timeString = loop ini fmtElems timeString
             | otherwise              = Left ("not digits chars: " ++ show [a,b])
         is2Digit _                 = Left ("not enough chars")
 
+        isNDigit n l
+            | length l1 < n        = Left ("not enough chars")
+            | and $ map isDigit l1 = Right (read l1, l2)
+            | otherwise            = Left ("not digits chars: " ++ show l)
+          where (l1, l2) = splitAt n l
+
         isNumber :: (Read a, Num a) => String -> Either String (a, String)
         isNumber s =
             case span isDigit s of
@@ -302,7 +336,16 @@ localTimeParseE fmt timeString = loop ini fmtElems timeString
         setHour  h (TimeOfDay _ m s ns) = TimeOfDay h m s ns
         setMin   m (TimeOfDay h _ s ns) = TimeOfDay h m s ns
         setSec   s (TimeOfDay h m _ ns) = TimeOfDay h m s ns
+        setNS    v (TimeOfDay h m s _ ) = TimeOfDay h m s v
 
+        setNsMask :: (Int, Int) -> Int -> TimeOfDay -> TimeOfDay
+        setNsMask (shift, mask) val (TimeOfDay h mins seconds (NanoSeconds ns)) =
+            let (nsD,keepL) = ns `divMod` s
+                (keepH,_)   = nsD `divMod` m
+                v           = ((keepH * m + fromIntegral val) * s) + keepL
+             in TimeOfDay h mins seconds (NanoSeconds v)
+          where s = 10 ^ shift
+                m = 10 ^ mask
 -- | Try parsing a string as time using the format explicitely specified
 --
 -- Unparsed characters are ignored and the error handling is simplified

@@ -21,3 +21,13 @@ pad4 v | v >= 1000  = show v
        | v >= 100   = '0' : show v
        | v >= 10    = '0':'0' : show v
        | otherwise  = '0':'0':'0': show v
+
+-- | Pad a number to at least N digits.
+--
+-- if the number is greater, no truncation happens.
+padN :: (Show a, Ord a, Num a, Integral a) => Int -> a -> String
+padN n v
+    | vlen >= n = vs
+    | otherwise = replicate (n - vlen) '0' ++ vs
+  where vs = show v
+        vlen = length vs
