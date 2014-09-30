@@ -1,5 +1,10 @@
 hourglass
 =========
+
+[![Build Status](https://travis-ci.org/vincenthz/hs-hourglass.png?branch=master)](https://travis-ci.org/vincenthz/hs-hourglass)
+[![BSD](http://b.repl.ca/v1/license-BSD-blue.png)](http://en.wikipedia.org/wiki/BSD_licenses)
+[![Haskell](http://b.repl.ca/v1/language-haskell-lightgrey.png)](http://haskell.org)
+
 Hourglass is a simple time library.
 
 Documentation: [hourglass on hackage](http://hackage.haskell.org/package/hourglass)
