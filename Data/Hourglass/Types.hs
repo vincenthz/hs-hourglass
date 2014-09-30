@@ -122,13 +122,30 @@ instance Show ElapsedP where
 instance NFData ElapsedP where rnf e = e `seq` ()
 
 instance Num ElapsedP where
-    (ElapsedP e1 ns1) + (ElapsedP e2 ns2) = ElapsedP (e1+e2) (ns1+ns2)
-    (ElapsedP e1 ns1) - (ElapsedP e2 ns2) = ElapsedP (e1-e2) (ns1-ns2)
+    (+) = addElapsedP
+    (-) = subElapsedP
     (ElapsedP e1 ns1) * (ElapsedP e2 ns2) = ElapsedP (e1*e2) (ns1*ns2)
     negate (ElapsedP e ns) = ElapsedP (negate e) ns
     abs (ElapsedP e ns)    = ElapsedP (abs e) ns
     signum (ElapsedP e ns) = ElapsedP (signum e) ns
     fromInteger i          = ElapsedP (Elapsed (fromIntegral i)) 0
+
+addElapsedP :: ElapsedP -> ElapsedP -> ElapsedP
+addElapsedP (ElapsedP e1 (NanoSeconds ns1)) (ElapsedP e2 (NanoSeconds ns2)) =
+    let notNormalizedNS = ns1 + ns2
+        (retainedNS, ns) = notNormalizedNS `divMod` 1000000000
+    in  ElapsedP (e1 + e2 + (Elapsed $ Seconds retainedNS)) (NanoSeconds ns)
+
+subElapsedP :: ElapsedP -> ElapsedP -> ElapsedP
+subElapsedP (ElapsedP e1 (NanoSeconds ns1)) (ElapsedP e2 (NanoSeconds ns2)) =
+    let notNormalizedNS = ns1 - ns2
+        notNormalizedS  = e1 - e2
+    in  if notNormalizedNS < 0
+            then ElapsedP (notNormalizedS - oneSecond) (NanoSeconds (1000000000 + notNormalizedNS))
+            else ElapsedP notNormalizedS (NanoSeconds notNormalizedNS)
+  where
+    oneSecond :: Elapsed
+    oneSecond = Elapsed $ Seconds 1
 
 instance Real ElapsedP where
     -- FIXME
