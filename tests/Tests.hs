@@ -110,6 +110,37 @@ eq expected got
     | expected == got = True
     | otherwise       = error ("expected: " ++ show expected ++ " got: " ++ show got)
 
+testCaseWith :: (Num a, Eq a, Show a) => String -> (a -> a -> a) -> (a, a, a) -> TestTree
+testCaseWith what fun (x, y, ref) =
+    testCase ((show x) ++ " " ++ what ++ " " ++ (show y) ++ " ?= " ++ (show ref)) checkAdd
+  where
+    checkAdd :: Assertion
+    checkAdd =
+        if fun x y /= ref
+            then assertFailure $ (show $ fun x y) ++ " /= " ++ (show ref)
+            else return ()
+
+arithmeticTestAddRef :: [(ElapsedP, ElapsedP, ElapsedP)]
+arithmeticTestAddRef = map testRefToElapsedP
+    [ ((1, 090000000), (2, 090000000), (3, 180000000))
+    , ((1, 900000000), (1, 200000000), (3, 100000000))
+    , ((1, 000000001), (0, 999999999), (2, 000000000))
+    ]
+
+arithmeticTestSubRef :: [(ElapsedP, ElapsedP, ElapsedP)]
+arithmeticTestSubRef = map testRefToElapsedP
+    [ ((1, 100000000), (1, 100000000), (0, 000000000))
+    , ((1, 900000000), (1, 100000000), (0, 800000000))
+    , ((1, 100000000), (0, 200000000), (0, 900000000))
+    , ((1, 100000000), (2, 400000000), (-2, 700000000))
+    ]
+
+testRefToElapsedP :: ((Int64, Int64), (Int64, Int64), (Int64, Int64)) -> (ElapsedP, ElapsedP, ElapsedP)
+testRefToElapsedP (a, b, c) = (tupleToElapsedP a, tupleToElapsedP b, tupleToElapsedP c) 
+  where
+    tupleToElapsedP :: (Int64, Int64) -> ElapsedP
+    tupleToElapsedP (s, n) = ElapsedP (Elapsed $ Seconds s) (NanoSeconds n)
+
 tests knowns = testGroup "hourglass"
     [ testGroup "known"
         [ testGroup "calendar conv" (map toCalendarTest $ zip eint (map tuple12 knowns))
@@ -132,7 +163,9 @@ tests knowns = testGroup "hourglass"
              in localTimeToGlobal l `eq` localTimeToGlobal l2
         ]
     , testGroup "arithmetic"
-        [ {-testProperty "add-diff" $ \(e :: Elapsed, tdiff) ->
+        [ testGroup "ElapseP add" $ map (testCaseWith "+" (+)) arithmeticTestAddRef
+        , testGroup "ElapseP sub" $ map (testCaseWith "-" (-)) arithmeticTestSubRef
+          {-testProperty "add-diff" $ \(e :: Elapsed, tdiff) ->
             let d@(TimeDiff _ _ day h mi s _) = tdiff { timeDiffYears  = 0
                                                       , timeDiffMonths = 0
                                                       , timeDiffNs     = 0
