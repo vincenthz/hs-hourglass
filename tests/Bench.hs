@@ -84,6 +84,7 @@ main = defaultMain
             [ bench ("hourglass/p")    $ nfIO timeCurrent
             , bench ("hourglass/ns")   $ nfIO timeCurrentP
             , bench ("time/posixTime") $ nfIO T.getPOSIXTime
+            , bench ("time/utcTime")   $ nfIO T.getCurrentTime
             ]
 
         showH :: Show a => a -> String
