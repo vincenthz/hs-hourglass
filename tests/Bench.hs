@@ -75,7 +75,7 @@ main = defaultMain
             , bench ("time/" ++ n v) $ nf time v
             ]
           where n (y,m,d,h,mi,s) = (intercalate "-" $ map show [y,m,d]) ++ " " ++ (intercalate ":" $ map show [h,mi,s])
-                hourglass (y,m,d,h,mi,s) = timeGetElapsed $ DateTime (Date y (toEnum (m-1)) d) (TimeOfDay h mi s 0)
+                hourglass (y,m,d,h,mi,s) = timeGetElapsed $ DateTime (Date y (toEnum (m-1)) d) (TimeOfDay (fromIntegral h) (fromIntegral mi) (fromIntegral s) 0)
                 time      (y,m,d,h,mi,s) = let day = T.fromGregorian (fromIntegral y) m d
                                                diffTime = T.secondsToDiffTime $ fromIntegral (h * 3600 + mi * 60 + s)
                                             in T.utcTimeToPOSIXSeconds (T.UTCTime day diffTime)
