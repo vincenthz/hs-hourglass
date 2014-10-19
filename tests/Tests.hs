@@ -196,7 +196,7 @@ tests knowns = testGroup "hourglass"
                 ed1  = localTimeParseE ISO8601_Date fmt
                 md2  = T.parseTime T.defaultTimeLocale fmt "%F"
              in case (ed1,md2) of
-                    (Left _, Nothing)         -> error ("both cannot parse: " ++ show fmt)
+                    (Left err, Nothing)       -> error ("both cannot parse: " ++ show fmt ++ " hourglass-err=" ++ show err)
                     (Left err, Just _)        -> error ("error parsing string: " ++ show err)
                     (Right (d1, ""), Just d2) -> dateEqual d1 d2
                     (Right (_,_), Nothing)    -> True -- let (LocalTime tparsed _) = r in error ("time cannot parse: " ++ show tparsed ++ " " ++ fmt)
