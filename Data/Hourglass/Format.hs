@@ -35,7 +35,8 @@ import Data.Hourglass.Time
 import Data.Hourglass.Calendar
 import Data.Hourglass.Local
 import Data.Hourglass.Utils
-import Data.Char (isDigit)
+import Data.Char (isDigit, ord)
+import Data.Int
 
 -- | All the various formatter that can be part
 -- of a time format string
@@ -240,31 +241,31 @@ localTimeParseE fmt timeString = loop ini fmtElems timeString
             | c == x    = Right (acc, xs)
             | otherwise = Left ("unexpected char, got: " ++ show c)
 
-        processOne acc Format_Year    s =
+        processOne acc Format_Year s =
             onSuccess (\y -> modDate (setYear y) acc) $ isNumber s
-        processOne acc Format_Year4    s =
-            onSuccess (\y -> modDate (setYear y) acc) $ is4Digit s
-        processOne acc Format_Year2    s = onSuccess
+        processOne acc Format_Year4 s =
+            onSuccess (\y -> modDate (setYear y) acc) $ getNDigitNum 4 s
+        processOne acc Format_Year2 s = onSuccess
             (\y -> let year = if y < 70 then y + 2000 else y + 1900 in modDate (setYear year) acc)
-            $ is2Digit s
-        processOne acc Format_Month2   s =
-            onSuccess (\m -> modDate (setMonth $ toEnum ((m - 1) `mod` 12)) acc) $ is2Digit s
-        processOne acc Format_Day2     s =
-            onSuccess (\d -> modDate (setDay d) acc) $ is2Digit s
+            $ getNDigitNum 2 s
+        processOne acc Format_Month2 s =
+            onSuccess (\m -> modDate (setMonth $ toEnum ((fromIntegral m - 1) `mod` 12)) acc) $ getNDigitNum 2 s
+        processOne acc Format_Day2 s =
+            onSuccess (\d -> modDate (setDay d) acc) $ getNDigitNum 2 s
         processOne acc Format_Hour s =
-            onSuccess (\h -> modTime (setHour h) acc) $ is2Digit s
+            onSuccess (\h -> modTime (setHour h) acc) $ getNDigitNum 2 s
         processOne acc Format_Minute s =
-            onSuccess (\mi -> modTime (setMin mi) acc) $ is2Digit s
+            onSuccess (\mi -> modTime (setMin mi) acc) $ getNDigitNum 2 s
         processOne acc Format_Second s =
-            onSuccess (\sec -> modTime (setSec sec) acc) $ is2Digit s
+            onSuccess (\sec -> modTime (setSec sec) acc) $ getNDigitNum 2 s
         processOne acc Format_MilliSecond s =
-            onSuccess (\ms -> modTime (setNsMask (6,3) ms) acc) $ isNDigit 3 s
+            onSuccess (\ms -> modTime (setNsMask (6,3) ms) acc) $ getNDigitNum 3 s
         processOne acc Format_MicroSecond s =
-            onSuccess (\us -> modTime (setNsMask (3,3) us) acc) $ isNDigit 3 s
+            onSuccess (\us -> modTime (setNsMask (3,3) us) acc) $ getNDigitNum 3 s
         processOne acc Format_NanoSecond s =
-            onSuccess (\ns -> modTime (setNsMask (0,3) ns) acc) $ isNDigit 3 s
+            onSuccess (\ns -> modTime (setNsMask (0,3) ns) acc) $ getNDigitNum 3 s
         processOne acc (Format_Precision p) s =
-            onSuccess (\num -> modTime (setNS num) acc) $ isNDigit p s 
+            onSuccess (\num -> modTime (setNS num) acc) $ getNDigitNum p s
         processOne acc Format_UnixSecond s =
             onSuccess (\sec ->
                 let newDate = dateTimeFromUnixEpochP $ flip ElapsedP 0 $ Elapsed $ Seconds sec
@@ -294,32 +295,27 @@ localTimeParseE fmt timeString = loop ini fmtElems timeString
         parseHM _ _    _ _ = Left ("invalid timezone format")
 
         toTZ isNeg h1 h2 m1 m2 = TimezoneOffset ((if isNeg then negate else id) minutes)
-          where minutes = (read [h1,h2] * 60) + read [m1,m2]
+          where minutes = (toInt [h1,h2] * 60) + toInt [m1,m2]
 
         onSuccess f (Right (v, s')) = Right (f v, s')
         onSuccess _ (Left s)        = Left s
 
-        is4Digit (a:b:c:d:s)
-            | allDigits [a,b,c,d] = Right (read (a:b:c:d:[]), s)
-            | otherwise           = Left ("not digits chars: " ++ show [a,b,c,d])
-        is4Digit _                = Left ("not enough chars")
-
-        is2Digit (a:b:s)
-            | isDigit a && isDigit b = Right (read (a:b:[]), s)
-            | otherwise              = Left ("not digits chars: " ++ show [a,b])
-        is2Digit _                 = Left ("not enough chars")
-
-        isNDigit n l
-            | length l1 < n        = Left ("not enough chars")
-            | and $ map isDigit l1 = Right (read l1, l2)
-            | otherwise            = Left ("not digits chars: " ++ show l)
-          where (l1, l2) = splitAt n l
-
-        isNumber :: (Read a, Num a) => String -> Either String (a, String)
+        isNumber :: Num a => String -> Either String (a, String)
         isNumber s =
             case span isDigit s of
                 ("",s2) -> Left ("no digits chars:" ++ s2)
-                (s1,s2) -> Right (read s1, s2)
+                (s1,s2) -> Right (toInt s1, s2)
+
+        getNDigitNum :: Int -> String -> Either String (Int64, String)
+        getNDigitNum n s
+            | length s1 < n      = Left ("not enough chars: expecting " ++ show n ++ " got " ++ show s1)
+            | not (allDigits s1) = Left ("not a digit chars in " ++ show s1)
+            | otherwise          = Right (toInt s1, s2)
+          where
+                (s1, s2) = splitAt n s
+
+        toInt :: Num a => String -> a
+        toInt = foldl (\acc w -> acc * 10 + fromIntegral (ord w - ord '0')) 0
 
         allDigits = and . map isDigit
 
@@ -330,15 +326,16 @@ localTimeParseE fmt timeString = loop ini fmtElems timeString
         modTime f (DateTime d tp, tz) = (DateTime d (f tp), tz)
         modTZ   f (dt, tz) = (dt, f tz)
 
-        setYear  y (Date _ m d) = Date y m d
+        setYear :: Int64 -> Date -> Date
+        setYear  y (Date _ m d) = Date (fromIntegral y) m d
         setMonth m (Date y _ d) = Date y m d
-        setDay   d (Date y m _) = Date y m d
-        setHour  h (TimeOfDay _ m s ns) = TimeOfDay h m s ns
-        setMin   m (TimeOfDay h _ s ns) = TimeOfDay h m s ns
-        setSec   s (TimeOfDay h m _ ns) = TimeOfDay h m s ns
-        setNS    v (TimeOfDay h m s _ ) = TimeOfDay h m s v
+        setDay   d (Date y m _) = Date y m (fromIntegral d)
+        setHour  h (TimeOfDay _ m s ns) = TimeOfDay (Hours h) m s ns
+        setMin   m (TimeOfDay h _ s ns) = TimeOfDay h (Minutes m) s ns
+        setSec   s (TimeOfDay h m _ ns) = TimeOfDay h m (Seconds s) ns
+        setNS    v (TimeOfDay h m s _ ) = TimeOfDay h m s (NanoSeconds v)
 
-        setNsMask :: (Int, Int) -> Int -> TimeOfDay -> TimeOfDay
+        setNsMask :: (Int, Int) -> Int64 -> TimeOfDay -> TimeOfDay
         setNsMask (shift, mask) val (TimeOfDay h mins seconds (NanoSeconds ns)) =
             let (nsD,keepL) = ns `divMod` s
                 (keepH,_)   = nsD `divMod` m
