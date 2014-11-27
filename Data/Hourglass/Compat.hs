@@ -63,9 +63,8 @@ daysTAItoPOSIX = 40587
 -- > dateFromTAIEpoch $ T.toModifiedJulianDay timeDay
 dateFromTAIEpoch :: Integer -- ^ number of days since TAI Epoch
                  -> Date
-dateFromTAIEpoch dtai = do
-    let elapsed = dtai - daysTAItoPOSIX
-    dateFromPOSIXEpoch elapsed
+dateFromTAIEpoch dtai =
+    dateFromPOSIXEpoch (dtai - daysTAItoPOSIX)
 
 -- | Convert of differential of time of a day.
 -- (it convers a Data.Time.Clock.DiffTime into a TimeOfDay)
