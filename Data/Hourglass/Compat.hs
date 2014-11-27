@@ -3,9 +3,9 @@
 -- License     : BSD-style
 -- Maintainer  : Nicolas DI PRIMA <nicolas@di-prima.fr>
 --
--- Basic Time converstion compatibility.
+-- Basic Time conversion compatibility.
 --
--- This module aims to help convertion between the types from the package
+-- This module aims to help conversion between the types from the package
 -- time to the package hourglass.
 --
 -- Example of use (extracted from file Example/Time/Compat.hs):
@@ -86,7 +86,7 @@ dateFromTAIEpoch dtai = do
 -- >
 -- > diffTimeToTimeOfDay $ T.timeOfDayToTime timeofday
 diffTimeToTimeOfDay :: Real t
-                    => t
+                    => t         -- ^ number of seconds of the time of the day
                     -> TimeOfDay
 diffTimeToTimeOfDay dt = do
     let r = toRational dt
