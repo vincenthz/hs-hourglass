@@ -88,14 +88,17 @@ diffTimeToTimeOfDay :: Real t
                     => t         -- ^ number of seconds of the time of the day
                     -> TimeOfDay
 diffTimeToTimeOfDay dt = do
-    let r = toRational dt
-    let (secs, nR) = properFraction r :: (Integer, Rational)
-    let nsecs = round (nR * 1000000000) :: Integer
-    let (minsofday, seconds) = secs `divMod` 60
-    let (hours, minutes) = minsofday `divMod` 60
     TimeOfDay
         { todHour = fromIntegral hours
         , todMin  = fromIntegral minutes
         , todSec  = fromIntegral seconds
         , todNSec = fromIntegral nsecs
         }
+  where
+    r :: Rational
+    r = toRational dt
+    (secs, nR) = properFraction r :: (Integer, Rational)
+    nsecs :: Integer
+    nsecs = round (nR * 1000000000)
+    (minsofday, seconds) = secs `divMod` 60 :: (Integer, Integer)
+    (hours, minutes) = minsofday `divMod` 60 :: (Integer, Integer)
