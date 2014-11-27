@@ -22,10 +22,12 @@ transpose oldTime =
         offsetTime
         (H.DateTime newDate timeofday)
   where
+    (T.ZonedTime (T.LocalTime day tod) (T.TimeZone tzmin _ _)) = oldTime
+
     newDate :: H.Date
-    newDate = C.dateFromTAIEpoch $ T.toModifiedJulianDay $ T.localDay $ T.zonedTimeToLocalTime oldTime
+    newDate = C.dateFromTAIEpoch $ T.toModifiedJulianDay day
 
     timeofday :: H.TimeOfDay
-    timeofday = C.diffTimeToTimeOfDay $ toRational $ T.timeOfDayToTime $ T.localTimeOfDay $ T.zonedTimeToLocalTime oldTime
+    timeofday = C.diffTimeToTimeOfDay $ toRational $ T.timeOfDayToTime tod
 
-    offsetTime = H.TimezoneOffset $ fromIntegral $ T.timeZoneMinutes $ T.zonedTimeZone oldTime
+    offsetTime = H.TimezoneOffset $ fromIntegral tzmin
