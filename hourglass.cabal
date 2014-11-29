@@ -26,6 +26,7 @@ Library
   Exposed-modules:   Data.Hourglass
                    , Data.Hourglass.Types
                    , Data.Hourglass.Epoch
+                   , Data.Hourglass.Compat
                    , System.Hourglass
   Other-modules:     Data.Hourglass.Time
                    , Data.Hourglass.Format
