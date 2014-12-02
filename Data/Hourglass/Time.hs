@@ -8,8 +8,6 @@
 -- generic time representation interface to allow
 -- arbitrary conversion between different time representation
 --
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE ExistentialQuantification #-}
 module Data.Hourglass.Time
     (
@@ -116,10 +114,10 @@ instance Time Date where
 
 instance Timeable DateTime where
     timeGetElapsedP d = ElapsedP (dateTimeToUnixEpoch d) (timeGetNanoSeconds d)
-    timeGetElapsed d  = dateTimeToUnixEpoch d
+    timeGetElapsed = dateTimeToUnixEpoch
     timeGetNanoSeconds (DateTime _ (TimeOfDay _ _ _ ns)) = ns
 instance Time DateTime where
-    timeFromElapsedP elapsed = dateTimeFromUnixEpochP elapsed
+    timeFromElapsedP = dateTimeFromUnixEpochP
 
 -- | Convert one time representation into another one
 -- 

@@ -87,7 +87,7 @@ dateFromTAIEpoch dtai =
 diffTimeToTimeOfDay :: Real t
                     => t         -- ^ number of seconds of the time of the day
                     -> TimeOfDay
-diffTimeToTimeOfDay dt = do
+diffTimeToTimeOfDay dt = 
     TimeOfDay
         { todHour = fromIntegral hours
         , todMin  = fromIntegral minutes

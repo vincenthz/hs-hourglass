@@ -76,7 +76,7 @@ data TimeFormatFct = TimeFormatFct
     }
 
 instance Show TimeFormatFct where
-    show f = timeFormatFctName f
+    show = timeFormatFctName
 instance Eq TimeFormatFct where
     t1 == t2 = timeFormatFctName t1 == timeFormatFctName t2
 
@@ -214,7 +214,7 @@ timePrint :: (TimeFormat format, Timeable t)
           => format -- ^ the format to use for printing
           -> t      -- ^ the global time to print
           -> String -- ^ the resulting string
-timePrint fmt t = printWith fmt timezone_UTC t
+timePrint fmt = printWith fmt timezone_UTC
 
 -- | Try parsing a string as time using the format explicitely specified
 --
@@ -224,7 +224,7 @@ localTimeParseE :: TimeFormat format
                 => format -- ^ the format to use for parsing
                 -> String -- ^ the string to parse
                 -> Either (TimeFormatElem, String) (LocalTime DateTime, String)
-localTimeParseE fmt timeString = loop ini fmtElems timeString
+localTimeParseE fmt = loop ini fmtElems 
   where (TimeFormatString fmtElems) = toFormat fmt
 
         toLocal (dt, tz) = localTime tz dt
@@ -292,7 +292,7 @@ localTimeParseE fmt timeString = loop ini fmtElems timeString
             | allDigits [h1,h2,m1,m2] = let tz = toTZ isNeg h1 h2 m1 m2
                                          in Right (modTZ (const tz) acc, xs)
             | otherwise               = Left ("not digits chars: " ++ show [h1,h2,m1,m2])
-        parseHM _ _    _ _ = Left ("invalid timezone format")
+        parseHM _ _    _ _ = Left "invalid timezone format"
 
         toTZ isNeg h1 h2 m1 m2 = TimezoneOffset ((if isNeg then negate else id) minutes)
           where minutes = (toInt [h1,h2] * 60) + toInt [m1,m2]
@@ -317,7 +317,7 @@ localTimeParseE fmt timeString = loop ini fmtElems timeString
         toInt :: Num a => String -> a
         toInt = foldl (\acc w -> acc * 10 + fromIntegral (ord w - ord '0')) 0
 
-        allDigits = and . map isDigit
+        allDigits = all isDigit
 
         ini = (DateTime (Date 0 (toEnum 0) 0) (TimeOfDay 0 0 0 0), TimezoneOffset 0)
 

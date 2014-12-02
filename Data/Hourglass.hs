@@ -20,21 +20,13 @@
 --
 -- > localTime (Date 2014 May 4) 600 -- local time at UTC+10 of May 4th 2014
 --
-module Data.Hourglass
-    ( module Data.Hourglass.Time
-    , module Data.Hourglass.Types
-    , module Data.Hourglass.Format
-    , module Data.Hourglass.Local
-    , module Data.Hourglass.Zone
-    -- * Calendar misc functions
-    , isLeapYear
-    , getWeekDay
-    , getDayOfTheYear
-    ) where
 
-import Data.Hourglass.Time
-import Data.Hourglass.Format
-import Data.Hourglass.Types
-import Data.Hourglass.Local
-import Data.Hourglass.Zone
+module Data.Hourglass
+       (isLeapYear, getWeekDay, getDayOfTheYear, module X) where
+import Data.Hourglass.Time as X
+import Data.Hourglass.Format as X
+import Data.Hourglass.Types as X
+import Data.Hourglass.Local as X
+import Data.Hourglass.Zone as X
+
 import Data.Hourglass.Calendar (isLeapYear, getWeekDay, getDayOfTheYear)

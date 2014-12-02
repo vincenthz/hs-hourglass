@@ -12,7 +12,6 @@
 --
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE CPP #-}
-{-# LANGUAGE EmptyDataDecls #-}
 module Data.Hourglass.Internal.Unix
     ( dateTimeFromUnixEpochP
     , dateTimeFromUnixEpoch
@@ -75,7 +74,7 @@ foreign import ccall unsafe "localtime_r"
 rawGmTime :: Elapsed -> CTm
 rawGmTime (Elapsed (Seconds s)) = unsafePerformIO callTime
   where callTime =
-            alloca $ \ctmPtr -> do
+            alloca $ \ctmPtr -> 
             alloca $ \ctimePtr -> do
                 poke ctimePtr ctime
                 r <- c_gmtime_r ctimePtr ctmPtr
@@ -93,7 +92,7 @@ rawGmTime (Elapsed (Seconds s)) = unsafePerformIO callTime
 localTime :: Elapsed -> IO CLong
 localTime (Elapsed (Seconds s)) = callTime
   where callTime =
-            alloca $ \ctmPtr -> do
+            alloca $ \ctmPtr -> 
             alloca $ \ctimePtr -> do
                 poke ctimePtr ctime
                 r <- c_localtime_r ctimePtr ctmPtr
@@ -135,7 +134,7 @@ fromCP ns ctm = DateTime d (t { todNSec = ns })
 instance Storable CTm where
     alignment _ = 8
     sizeOf _    = 60 -- account for 9 ints, alignment + 2 unsigned long at end.
-    peek ptr    = do
+    peek ptr    = 
         CTm <$> peekByteOff intPtr 0
             <*> peekByteOff intPtr 4
             <*> peekByteOff intPtr 8
@@ -143,7 +142,7 @@ instance Storable CTm where
             <*> peekByteOff intPtr 16
             <*> peekByteOff intPtr 20
       where intPtr = castPtr ptr
-    poke ptr (CTm f0 f1 f2 f3 f4 f5) = do
+    poke ptr (CTm f0 f1 f2 f3 f4 f5) = 
         mapM_ (uncurry (pokeByteOff intPtr))
             [(0,f0), (4,f1), (8,f2), (12,f3), (16,f4), (20,f5)]
         --pokeByteOff (castPtr ptr) 36 f9
