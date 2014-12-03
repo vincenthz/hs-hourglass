@@ -206,6 +206,12 @@ tests knowns = testGroup "hourglass"
             case r of
                 Right (localtime, "") -> tz `eq` localTimeGetTimezone localtime
                 _                     -> error "Cannot parse timezone"
+        , testProperty "custome" $ \(dt :: DateTime) ->
+            let fmt = "YYYY-MM-DDTH:MI:S.msusns" :: String
+                p1  = timePrint fmt dt
+            in case timeParse fmt p1 of
+                  Nothing  -> error ("cannot decode printed DateTime: " ++ show p1 ++ " with format " ++ show fmt)
+                  Just dt2 -> dt `eq` dt2
         ]
     ]
   where toCalendarTest (i, (us, dt)) =
