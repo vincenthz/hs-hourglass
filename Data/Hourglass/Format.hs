@@ -267,6 +267,8 @@ localTimeParseE fmt timeString = loop ini fmtElems timeString
             $ getNDigitNum 2 s
         processOne acc Format_Month2 s =
             onSuccess (\m -> modDate (setMonth $ toEnum ((fromIntegral m - 1) `mod` 12)) acc) $ getNDigitNum 2 s
+        processOne acc Format_MonthName_Short s =
+            onSuccess (\m -> modDate (setMonth m) acc) $ getMonth s
         processOne acc Format_Day2 s =
             onSuccess (\d -> modDate (setDay d) acc) $ getNDigitNum 2 s
         processOne acc Format_Hour s =
