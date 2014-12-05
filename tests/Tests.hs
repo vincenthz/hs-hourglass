@@ -206,12 +206,8 @@ tests knowns = testGroup "hourglass"
             case r of
                 Right (localtime, "") -> tz `eq` localTimeGetTimezone localtime
                 _                     -> error "Cannot parse timezone"
-        , testProperty "custome" $ \(dt :: DateTime) ->
-            let fmt = "YYYY-MM-DDTH:MI:S.msusns" :: String
-                p1  = timePrint fmt dt
-            in case timeParse fmt p1 of
-                  Nothing  -> error ("cannot decode printed DateTime: " ++ show p1 ++ " with format " ++ show fmt)
-                  Just dt2 -> dt `eq` dt2
+        , testProperty "custom-1" $ test_property_format ("YYYY-MM-DDTH:MI:S.msusns" :: String)
+        , testProperty "custom-2" $ test_property_format ("Mon DD\\t\\h YYYY at HH\\hMI\\mS\\s.p9\\n\\s" :: String)
         ]
     ]
   where toCalendarTest (i, (us, dt)) =
@@ -229,6 +225,13 @@ tests knowns = testGroup "hourglass"
 
         calTimeFormatTimeISO8601 timePosix =
             T.formatTime T.defaultTimeLocale "%F" (T.posixSecondsToUTCTime timePosix)
+
+        test_property_format :: (TimeFormat format, Show format) => format -> DateTime -> Bool
+        test_property_format fmt dt =
+            let p1  = timePrint fmt dt in
+            case timeParseE fmt p1 of
+                Left (fmtEl, err) -> error ("cannot decode printed DateTime: " ++ show p1 ++ " with format " ++ show fmt ++ " error with(" ++ show fmtEl ++ "): " ++ err)
+                Right (dt2, _) -> dt `eq` dt2
 
 main = do
     knowns <- E.catch (map parseTimeConv . lines <$> readFile "test-time-db")
