@@ -294,6 +294,7 @@ localTimeParseE fmt timeString = loop ini fmtElems timeString
         processOne acc Format_TzHM (c:s) =
             parseHMSign False acc c s
 
+        processOne acc Format_Spaces (' ':s) = Right (acc, s)
         -- catch all for unimplemented format.
         processOne _ f _ = error ("unimplemened parsing format: " ++ show f)
 
