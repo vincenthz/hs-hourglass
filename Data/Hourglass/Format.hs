@@ -307,10 +307,16 @@ localTimeParseE fmt timeString = loop ini fmtElems timeString
                 (s1,s2) -> Right (toInt s1, s2)
 
         getNDigitNum :: Int -> String -> Either String (Int64, String)
-        getNDigitNum n s
-            | length s1 < n      = Left ("not enough chars: expecting " ++ show n ++ " got " ++ show s1)
-            | not (allDigits s1) = Left ("not a digit chars in " ++ show s1)
-            | otherwise          = Right (toInt s1, s2)
+        getNDigitNum n s =
+            case getNChar n s of
+                Left err                            -> Left err
+                Right (s1, s2) | not (allDigits s1) -> Left ("not a digit chars in " ++ show s1)
+                               | otherwise          -> Right (toInt s1, s2)
+
+        getNChar :: Int -> String -> Either String (String, String)
+        getNChar n s
+            | length s1 < n = Left ("not enough chars: expecting " ++ show n ++ " got " ++ show s1)
+            | otherwise     = Right (s1, s2)
           where
                 (s1, s2) = splitAt n s
 
