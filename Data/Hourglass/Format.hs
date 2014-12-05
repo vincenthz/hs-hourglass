@@ -157,6 +157,23 @@ instance TimeFormat ISO8601_DateAndTime where
       where dash = Format_Text '-'
             colon = Format_Text ':'
 
+monthFromShort :: String -> Either String Month
+monthFromShort str =
+    case str of
+        "Jan" -> Right January
+        "Feb" -> Right February
+        "Mar" -> Right March
+        "Apr" -> Right April
+        "May" -> Right May
+        "Jun" -> Right June
+        "Jul" -> Right July
+        "Aug" -> Right August
+        "Sep" -> Right September
+        "Oct" -> Right October
+        "Nov" -> Right November
+        "Dec" -> Right December
+        _     -> Left $ "unknown month: " ++ str
+
 printWith :: (TimeFormat format, Timeable t)
           => format
           -> TimezoneOffset
@@ -312,6 +329,10 @@ localTimeParseE fmt timeString = loop ini fmtElems timeString
                 Left err                            -> Left err
                 Right (s1, s2) | not (allDigits s1) -> Left ("not a digit chars in " ++ show s1)
                                | otherwise          -> Right (toInt s1, s2)
+
+        getMonth :: String -> Either String (Month, String)
+        getMonth s =
+            getNChar 3 s >>= \(s1, s2) -> monthFromShort s1 >>= \m -> Right (m, s2)
 
         getNChar :: Int -> String -> Either String (String, String)
         getNChar n s
