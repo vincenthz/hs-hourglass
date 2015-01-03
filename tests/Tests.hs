@@ -25,7 +25,11 @@ import qualified Data.Time.Calendar as T
 import qualified Data.Time.Clock as T
 import qualified Data.Time.Clock.POSIX as T
 import qualified Data.Time.Format as T
+#if MIN_VERSION_time(1,5,0)
+import qualified System.Locale as T hiding (defaultTimeLocale)
+#else
 import qualified System.Locale as T
+#endif
 
 import qualified Control.Exception as E
 
