@@ -157,6 +157,23 @@ instance TimeFormat ISO8601_DateAndTime where
       where dash = Format_Text '-'
             colon = Format_Text ':'
 
+monthFromShort :: String -> Either String Month
+monthFromShort str =
+    case str of
+        "Jan" -> Right January
+        "Feb" -> Right February
+        "Mar" -> Right March
+        "Apr" -> Right April
+        "May" -> Right May
+        "Jun" -> Right June
+        "Jul" -> Right July
+        "Aug" -> Right August
+        "Sep" -> Right September
+        "Oct" -> Right October
+        "Nov" -> Right November
+        "Dec" -> Right December
+        _     -> Left $ "unknown month: " ++ str
+
 printWith :: (TimeFormat format, Timeable t)
           => format
           -> TimezoneOffset
@@ -250,6 +267,8 @@ localTimeParseE fmt timeString = loop ini fmtElems timeString
             $ getNDigitNum 2 s
         processOne acc Format_Month2 s =
             onSuccess (\m -> modDate (setMonth $ toEnum ((fromIntegral m - 1) `mod` 12)) acc) $ getNDigitNum 2 s
+        processOne acc Format_MonthName_Short s =
+            onSuccess (\m -> modDate (setMonth m) acc) $ getMonth s
         processOne acc Format_Day2 s =
             onSuccess (\d -> modDate (setDay d) acc) $ getNDigitNum 2 s
         processOne acc Format_Hour s =
@@ -275,6 +294,7 @@ localTimeParseE fmt timeString = loop ini fmtElems timeString
         processOne acc Format_TzHM (c:s) =
             parseHMSign False acc c s
 
+        processOne acc Format_Spaces (' ':s) = Right (acc, s)
         -- catch all for unimplemented format.
         processOne _ f _ = error ("unimplemened parsing format: " ++ show f)
 
@@ -307,10 +327,20 @@ localTimeParseE fmt timeString = loop ini fmtElems timeString
                 (s1,s2) -> Right (toInt s1, s2)
 
         getNDigitNum :: Int -> String -> Either String (Int64, String)
-        getNDigitNum n s
-            | length s1 < n      = Left ("not enough chars: expecting " ++ show n ++ " got " ++ show s1)
-            | not (allDigits s1) = Left ("not a digit chars in " ++ show s1)
-            | otherwise          = Right (toInt s1, s2)
+        getNDigitNum n s =
+            case getNChar n s of
+                Left err                            -> Left err
+                Right (s1, s2) | not (allDigits s1) -> Left ("not a digit chars in " ++ show s1)
+                               | otherwise          -> Right (toInt s1, s2)
+
+        getMonth :: String -> Either String (Month, String)
+        getMonth s =
+            getNChar 3 s >>= \(s1, s2) -> monthFromShort s1 >>= \m -> Right (m, s2)
+
+        getNChar :: Int -> String -> Either String (String, String)
+        getNChar n s
+            | length s1 < n = Left ("not enough chars: expecting " ++ show n ++ " got " ++ show s1)
+            | otherwise     = Right (s1, s2)
           where
                 (s1, s2) = splitAt n s
 
