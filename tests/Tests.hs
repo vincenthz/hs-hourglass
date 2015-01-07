@@ -129,11 +129,12 @@ arithmeticTestAddRef = map testRefToElapsedP
 
 arithmeticTestSubRef :: [(ElapsedP, ElapsedP, ElapsedP)]
 arithmeticTestSubRef = map testRefToElapsedP
-    [ ((1, 100000000), (1, 100000000), (0, 000000000))
-    , ((1, 900000000), (1, 100000000), (0, 800000000))
-    , ((1, 100000000), (0, 200000000), (0, 900000000))
-    , ((1, 100000000), (2, 400000000), (-2, 700000000))
+    [ ((1, ms 100), (1, ms 100), (0, ms 000))
+    , ((1, ms 900), (1, ms 100), (0, ms 800))
+    , ((1, ms 100), (0, ms 200), (0, ms 900))
+    , ((1, ms 100), (2, ms 400), (-2, ms 700))
     ]
+  where ms v = v * 1000000
 
 testRefToElapsedP :: ((Int64, Int64), (Int64, Int64), (Int64, Int64)) -> (ElapsedP, ElapsedP, ElapsedP)
 testRefToElapsedP (a, b, c) = (tupleToElapsedP a, tupleToElapsedP b, tupleToElapsedP c) 
