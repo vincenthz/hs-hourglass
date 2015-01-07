@@ -1,3 +1,7 @@
+## Version 0.2.8 (2015-01-07)
+
+- Fix test with time 1.5
+
 ## Version 0.2.7 (2015-01-07)
 
 - Add compatibility module for easy convertion with time and other standards.
