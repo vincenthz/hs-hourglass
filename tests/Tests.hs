@@ -1,11 +1,10 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE CPP #-}
 module Main where
 
 import Control.Applicative
-import Data.Monoid (mempty)
+import Control.Monad (when)
 --import Control.DeepSeq
 
 import Test.Tasty
@@ -116,13 +115,13 @@ eq expected got
 
 testCaseWith :: (Num a, Eq a, Show a) => String -> (a -> a -> a) -> (a, a, a) -> TestTree
 testCaseWith what fun (x, y, ref) =
-    testCase ((show x) ++ " " ++ what ++ " " ++ (show y) ++ " ?= " ++ (show ref)) checkAdd
+    testCase (show x ++ " " ++ what ++ " " ++ show y ++ " ?= " ++ show ref) checkAdd
   where
     checkAdd :: Assertion
-    checkAdd =
-        if fun x y /= ref
-            then assertFailure $ (show $ fun x y) ++ " /= " ++ (show ref)
-            else return ()
+    checkAdd = 
+      when (fun x y /= ref) $ 
+        assertFailure $ show (fun x y) ++ " /= " ++ show ref
+        
 
 arithmeticTestAddRef :: [(ElapsedP, ElapsedP, ElapsedP)]
 arithmeticTestAddRef = map testRefToElapsedP
@@ -148,9 +147,9 @@ testRefToElapsedP (a, b, c) = (tupleToElapsedP a, tupleToElapsedP b, tupleToElap
 
 tests knowns = testGroup "hourglass"
     [ testGroup "known"
-        [ testGroup "calendar conv" (map toCalendarTest $ zip eint (map tuple12 knowns))
-        , testGroup "seconds conv" (map toSecondTest $ zip eint (map tuple12 knowns))
-        , testGroup "weekday" (map toWeekDayTest $ zip eint (map tuple13 knowns))
+        [ testGroup "calendar conv" (zipWith (curry toCalendarTest) eint (map tuple12 knowns))
+        , testGroup "seconds conv" (zipWith (curry toSecondTest) eint (map tuple12 knowns))
+        , testGroup "weekday" (zipWith (curry toWeekDayTest) eint (map tuple13 knowns))
         ]
     , testGroup "conversion"
         [ testProperty "calendar" $ \(e :: Elapsed) ->

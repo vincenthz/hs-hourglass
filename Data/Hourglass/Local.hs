@@ -1,5 +1,3 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE FlexibleInstances #-}
 -- |
 -- Module      : Data.Hourglass.Local
@@ -73,7 +71,7 @@ localTimeToGlobal (LocalTime local tz)
 
 -- | create a local time value from a global one
 localTimeFromGlobal :: Time t => t -> LocalTime t
-localTimeFromGlobal t = localTime (TimezoneOffset 0) t
+localTimeFromGlobal = localTime $ TimezoneOffset 0
 
 -- | Change the timezone, and adjust the local value to represent the new local value.
 localTimeSetTimezone :: Time t => TimezoneOffset -> LocalTime t -> LocalTime t

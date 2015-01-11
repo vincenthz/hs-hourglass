@@ -48,5 +48,5 @@ tzMinutesPrint offset =
     : (pad0 h ++ ":" ++ pad0 m)
   where (h,m)  = abs offset `divMod` 60
         pad0 v
-            | v < 10    = ('0':show v)
-            | otherwise = (show v)
+            | v < 10    = '0':show v
+            | otherwise = show v

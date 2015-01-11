@@ -17,7 +17,7 @@ r !s
         isNumber ('-':xs) = allNum xs
         isNumber n@(_:_)  = allNum n
 
-        allNum = and . map isDigit
+        allNum = all isDigit
 
 wordsWhen :: (Char -> Bool) -> String -> [String]
 wordsWhen p s = case dropWhile p s of
@@ -28,7 +28,7 @@ wordsWhen p s = case dropWhile p s of
 parseTimeConv :: String -> (Elapsed, DateTime, WeekDay, Int)
 parseTimeConv v =
     case wordsWhen (== ':') v of
-        ts:y:m:d:h:n:s:wd:doy:[] ->
+        [ts, y, m, d, h, n, s, wd, doy] ->
             ( r ts
             , DateTime (Date (r y) (toEnum $ r m - 1) (r d)) (TimeOfDay (r h) (r n) (r s) 0)
             , read wd

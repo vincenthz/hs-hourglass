@@ -1,4 +1,3 @@
-{-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE BangPatterns #-}
 module Main (main) where
 
@@ -74,17 +73,17 @@ main = defaultMain
             [ bench ("hourglass/" ++ n v) $ nf hourglass v
             , bench ("time/" ++ n v) $ nf time v
             ]
-          where n (y,m,d,h,mi,s) = (intercalate "-" $ map show [y,m,d]) ++ " " ++ (intercalate ":" $ map show [h,mi,s])
+          where n (y,m,d,h,mi,s) = intercalate "-" (map show [y,m,d]) ++ " " ++ intercalate ":" (map show [h,mi,s])
                 hourglass (y,m,d,h,mi,s) = timeGetElapsed $ DateTime (Date y (toEnum (m-1)) d) (TimeOfDay (fromIntegral h) (fromIntegral mi) (fromIntegral s) 0)
                 time      (y,m,d,h,mi,s) = let day = T.fromGregorian (fromIntegral y) m d
                                                diffTime = T.secondsToDiffTime $ fromIntegral (h * 3600 + mi * 60 + s)
                                             in T.utcTimeToPOSIXSeconds (T.UTCTime day diffTime)
 
         fromSystem =
-            [ bench ("hourglass/p")    $ nfIO timeCurrent
-            , bench ("hourglass/ns")   $ nfIO timeCurrentP
-            , bench ("time/posixTime") $ nfIO T.getPOSIXTime
-            , bench ("time/utcTime")   $ nfIO T.getCurrentTime
+            [ bench "hourglass/p"    $ nfIO timeCurrent
+            , bench "hourglass/ns"   $ nfIO timeCurrentP
+            , bench "time/posixTime" $ nfIO T.getPOSIXTime
+            , bench "time/utcTime"   $ nfIO T.getCurrentTime
             ]
 
         showH :: Show a => a -> String
