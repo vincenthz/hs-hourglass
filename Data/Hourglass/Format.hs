@@ -10,6 +10,7 @@
 -- Built-in format strings
 --
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE TypeSynonymInstances #-}
 module Data.Hourglass.Format
     (
     -- * Parsing and Printing
