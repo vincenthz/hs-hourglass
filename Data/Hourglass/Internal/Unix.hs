@@ -50,8 +50,13 @@ systemGetElapsedP = allocaBytesAligned sofTimespec 8 $ \ptr -> do
   where sofTimespec = sofCTime + sofCLong
         sofCTime = sizeOf (0 :: CTime)
         sofCLong = sizeOf (0 :: CLong)
+#if (MIN_VERSION_base(4,5,0))
         toElapsedP :: CTime -> CLong -> ElapsedP
         toElapsedP (CTime sec) nsec = ElapsedP (Elapsed $ Seconds (fromIntegral sec)) (fromIntegral nsec)
+#else
+        toElapsedP :: CLong -> CLong -> ElapsedP
+        toElapsedP sec         nsec = ElapsedP (Elapsed $ Seconds (fromIntegral sec)) (fromIntegral nsec)
+#endif
 
 -- | return the current elapsed
 systemGetElapsed :: IO Elapsed
@@ -59,17 +64,30 @@ systemGetElapsed = allocaBytesAligned sofTimespec 8 $ \ptr -> do
     c_clock_get ptr
     toElapsed <$> peek (castPtr ptr)
   where sofTimespec = sizeOf (0 :: CTime) + sizeOf (0 :: CLong)
+#if (MIN_VERSION_base(4,5,0))
         toElapsed :: CTime -> Elapsed
         toElapsed (CTime sec) = Elapsed $ Seconds (fromIntegral sec)
+#else
+        toElapsed :: CLong -> Elapsed
+        toElapsed sec         = Elapsed $ Seconds (fromIntegral sec)
+#endif
 
 foreign import ccall unsafe "hourglass_clock_calendar"
     c_clock_get :: Ptr CLong -> IO ()
 
+#if (MIN_VERSION_base(4,5,0))
 foreign import ccall unsafe "gmtime_r"
     c_gmtime_r :: Ptr CTime -> Ptr CTm -> IO (Ptr CTm)
 
 foreign import ccall unsafe "localtime_r"
     c_localtime_r :: Ptr CTime -> Ptr CTm -> IO (Ptr CTm)
+#else
+foreign import ccall unsafe "gmtime_r"
+    c_gmtime_r :: Ptr CLong -> Ptr CTm -> IO (Ptr CTm)
+
+foreign import ccall unsafe "localtime_r"
+    c_localtime_r :: Ptr CLong -> Ptr CTm -> IO (Ptr CTm)
+#endif
 
 -- | Return a global time's struct tm based on the number of elapsed second since unix epoch.
 rawGmTime :: Elapsed -> CTm
