@@ -8,9 +8,10 @@
 -- generic time representation interface to allow
 -- arbitrary conversion between different time representation
 --
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE ExistentialQuantification #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module Data.Hourglass.Time
     (
     -- * Generic time classes
@@ -86,6 +87,7 @@ class Timeable t => Time t where
     timeFromElapsed :: Elapsed -> t
     timeFromElapsed e = timeFromElapsedP (ElapsedP e 0)
 
+#if (MIN_VERSION_base(4,5,0))
 instance Timeable CTime where
     timeGetElapsedP c         = ElapsedP (timeGetElapsed c) 0
     timeGetElapsed  (CTime c) = Elapsed (Seconds $ fromIntegral c)
@@ -93,6 +95,7 @@ instance Timeable CTime where
 instance Time CTime where
     timeFromElapsedP (ElapsedP e _)       = timeFromElapsed e
     timeFromElapsed (Elapsed (Seconds c)) = CTime (fromIntegral c)
+#endif
 
 instance Timeable Elapsed where
     timeGetElapsedP  e = ElapsedP e 0
