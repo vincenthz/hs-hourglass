@@ -37,6 +37,7 @@ module Data.Hourglass.Time
     , timeAdd
     , timeDiff
     , timeDiffP
+    , dateAddPeriod
     ) where
 
 import Data.Data ()
