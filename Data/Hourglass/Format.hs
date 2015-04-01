@@ -77,7 +77,7 @@ data TimeFormatFct = TimeFormatFct
     }
 
 instance Show TimeFormatFct where
-    show f = timeFormatFctName f
+    show = timeFormatFctName
 instance Eq TimeFormatFct where
     t1 == t2 = timeFormatFctName t1 == timeFormatFctName t2
 
@@ -313,7 +313,7 @@ localTimeParseE fmt timeString = loop ini fmtElems timeString
             | allDigits [h1,h2,m1,m2] = let tz = toTZ isNeg h1 h2 m1 m2
                                          in Right (modTZ (const tz) acc, xs)
             | otherwise               = Left ("not digits chars: " ++ show [h1,h2,m1,m2])
-        parseHM _ _    _ _ = Left ("invalid timezone format")
+        parseHM _ _    _ _ = Left "invalid timezone format"
 
         toTZ isNeg h1 h2 m1 m2 = TimezoneOffset ((if isNeg then negate else id) minutes)
           where minutes = (toInt [h1,h2] * 60) + toInt [m1,m2]

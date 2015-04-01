@@ -7,10 +7,7 @@
 --
 -- System lowlevel functions
 --
-{-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE CPP #-}
-{-# LANGUAGE EmptyDataDecls #-}
-
 module Data.Hourglass.Internal
     ( dateTimeFromUnixEpochP
     , dateTimeFromUnixEpoch

@@ -49,7 +49,7 @@ dateTimeFromUnixEpochP (ElapsedP e ns) = toDateTime $ callSystemTime e
             DateTime (Date (fi wY) (toEnum $ fi $ wM - 1) (fi wD))
                      (TimeOfDay (fi wH) (fi wMin) (fi wS) ns)
         fi :: (Integral a, Num b) => a -> b
-        fi x = fromIntegral x
+        fi = fromIntegral
 
 dateTimeFromUnixEpoch :: Elapsed -> DateTime
 dateTimeFromUnixEpoch e = toDateTime $ callSystemTime e
@@ -57,7 +57,7 @@ dateTimeFromUnixEpoch e = toDateTime $ callSystemTime e
             DateTime (Date (fi wY) (toEnum $ fi $ wM - 1) (fi wD))
                      (TimeOfDay (fi wH) (fi wMin) (fi wS) 0)
         fi :: (Integral a, Num b) => a -> b
-        fi x = fromIntegral x
+        fi = fromIntegral
 
 systemGetTimezone :: IO TimezoneOffset
 systemGetTimezone = do

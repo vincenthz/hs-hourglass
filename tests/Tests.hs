@@ -5,8 +5,6 @@
 module Main where
 
 import Control.Applicative
-import Data.Monoid (mempty)
---import Control.DeepSeq
 
 import Test.Tasty
 import Test.Tasty.QuickCheck
@@ -16,7 +14,6 @@ import Data.Word
 import Data.Int
 import Data.Hourglass
 import Data.Hourglass.Epoch
---import System.Hourglass
 
 import Foreign.Storable
 import Foreign.C.Types (CTime)

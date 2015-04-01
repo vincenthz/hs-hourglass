@@ -201,7 +201,7 @@ timezoneOffsetToSeconds (TimezoneOffset ofs) = Seconds (fromIntegral ofs * 60)
 
 instance Show TimezoneOffset where
     show (TimezoneOffset tz) =
-        concat [(if tz < 0 then "-" else "+"), pad2 tzH, pad2 tzM]
+        concat [if tz < 0 then "-" else "+", pad2 tzH, pad2 tzM]
       where (tzH, tzM) = abs tz `divMod` 60
 
 -- | The UTC timezone. offset of 0
