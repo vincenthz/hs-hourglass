@@ -166,7 +166,7 @@ data Month =
     | October
     | November
     | December
-    deriving (Show,Eq,Ord,Enum,Data,Typeable)
+    deriving (Show,Eq,Ord,Enum,Data,Typeable,Bounded)
 
 -- | Day of the week
 --
@@ -179,7 +179,7 @@ data WeekDay =
     | Thursday
     | Friday
     | Saturday
-    deriving (Show,Read,Eq,Ord,Enum,Data,Typeable)
+    deriving (Show,Read,Eq,Ord,Enum,Data,Typeable,Bounded)
 
 -- | Offset against UTC in minutes
 --
