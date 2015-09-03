@@ -34,7 +34,7 @@ data Period = Period
     { periodYears  :: !Int
     , periodMonths :: !Int
     , periodDays   :: !Int
-    } deriving (Read,Eq,Ord,Data,Typeable)
+    } deriving (Show,Read,Eq,Ord,Data,Typeable)
 
 instance NFData Period where
     rnf (Period y m d) = y `seq` m `seq` d `seq` ()
@@ -50,7 +50,7 @@ data Duration = Duration
     , durationMinutes :: !Minutes     -- ^ number of minutes
     , durationSeconds :: !Seconds     -- ^ number of seconds
     , durationNs      :: !NanoSeconds -- ^ number of nanoseconds
-    } deriving (Read,Eq,Ord,Data,Typeable)
+    } deriving (Show,Read,Eq,Ord,Data,Typeable)
 
 instance NFData Duration where
     rnf (Duration h m s ns) = h `seq` m `seq` s `seq` ns `seq` ()
