@@ -166,7 +166,7 @@ data Month =
     | October
     | November
     | December
-    deriving (Show,Eq,Ord,Enum,Data,Typeable)
+    deriving (Show,Read,Eq,Ord,Enum,Data,Typeable)
 
 -- | Day of the week
 --
@@ -213,7 +213,7 @@ data Date = Date
     { dateYear  :: {-# UNPACK #-} !Int   -- ^ year (Common Era)
     , dateMonth :: !Month                -- ^ month of the year
     , dateDay   :: {-# UNPACK #-} !Int   -- ^ day of the month, between 1 to 31
-    } deriving (Show,Eq,Ord,Data,Typeable)
+    } deriving (Show,Read,Eq,Ord,Data,Typeable)
 
 instance NFData Date where
     rnf (Date y m d) = y `seq` m `seq` d `seq` ()
@@ -224,7 +224,7 @@ data TimeOfDay = TimeOfDay
     , todMin  :: {-# UNPACK #-} !Minutes -- ^ minutes, between 0 and 59
     , todSec  :: {-# UNPACK #-} !Seconds -- ^ seconds, between 0 and 59. 60 when having leap second */
     , todNSec :: {-# UNPACK #-} !NanoSeconds -- ^ nanoseconds, between 0 and 999999999 */
-    } deriving (Show,Eq,Ord,Data,Typeable)
+    } deriving (Show,Read,Eq,Ord,Data,Typeable)
 
 instance NFData TimeOfDay where
     rnf (TimeOfDay h m s ns) = h `seq` m `seq` s `seq` ns `seq` ()
@@ -233,7 +233,7 @@ instance NFData TimeOfDay where
 data DateTime = DateTime
     { dtDate :: Date
     , dtTime :: TimeOfDay
-    } deriving (Show,Eq,Ord,Data,Typeable)
+    } deriving (Show,Read,Eq,Ord,Data,Typeable)
 
 instance NFData DateTime where
     rnf (DateTime d t) = rnf d `seq` rnf t `seq` ()
