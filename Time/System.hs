@@ -21,7 +21,7 @@ module Time.System
     ) where
 
 import Control.Applicative
-import Data.Hourglass.Types
+import Time.Types
 import Data.Hourglass.Time
 import Data.Hourglass.Local
 import Data.Hourglass.Internal (systemGetElapsedP, systemGetElapsed, systemGetTimezone)

@@ -23,11 +23,12 @@ extra-source-files:  README.md
                   ,  tests/TimeDB.hs
 
 Library
-  Exposed-modules:   Data.Hourglass
+  Exposed-modules:   Time.Types
+                   , Time.System
+                   , Data.Hourglass
                    , Data.Hourglass.Types
                    , Data.Hourglass.Epoch
                    , Data.Hourglass.Compat
-                   , Time.System
                    , System.Hourglass
   Other-modules:     Data.Hourglass.Time
                    , Data.Hourglass.Format
