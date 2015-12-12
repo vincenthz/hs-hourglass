@@ -7,7 +7,7 @@
 --
 -- Get the system timezone and current time value in multiple formats
 --
--- This module will be depriciated in favor of Time.System
+-- This module will be depreciated in favor of Time.System
 --
 module System.Hourglass
     ( module Time.System
