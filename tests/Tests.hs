@@ -83,7 +83,7 @@ instance Arbitrary Minutes where
 instance Arbitrary Hours where
     arbitrary = Hours <$> choose (-1125899906842, 1125899906842)
 instance Arbitrary NanoSeconds where
-    arbitrary = NanoSeconds <$> choose (0, 100000000)
+    arbitrary = NanoSeconds <$> choose (0, 999999999)
 instance Arbitrary Elapsed where
     arbitrary = Elapsed <$> arbitrary
 instance Arbitrary TimezoneOffset where
@@ -213,10 +213,10 @@ tests knowns = testGroup "hourglass"
         , testProperty "custom-2" $ test_property_format ("Mon DD\\t\\h YYYY at HH\\hMI\\mS\\s.p9\\n\\s" :: String)
         , testProperty "correctly parses nanoseconds" $ \(ns :: Int64) -> (100000000<=ns && ns<1000000000) ==> let
              mtime = timeParse [Format_NanoSecond] $ show ns
-             in maybe (-1) timeGetNanoSeconds mtime == NanoSeconds ns
+             in maybe (-1) timeGetNanoSeconds mtime === NanoSeconds ns
         , testProperty "correctly prints nanoseconds" $ \(ns :: Int64) -> (100000000<=ns && ns<1000000000) ==>let
              time = DateTime { dtTime = TimeOfDay { todHour=0, todMin=0, todSec=0, todNSec = NanoSeconds ns }}
-             in timePrint [Format_NanoSecond] time == show ns
+             in timePrint [Format_NanoSecond] time === show ns
         ]
     ]
   where toCalendarTest (i, (us, dt)) =
