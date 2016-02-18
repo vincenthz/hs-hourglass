@@ -217,7 +217,8 @@ tests knowns = testGroup "hourglass"
         , testProperty "correctly parses nanoseconds" $ \(ns :: NanoSeconds) -> let
              mtime = timeParse [Format_NanoSecond] $ timePrint [Format_NanoSecond] $ DateTime { dtTime = TimeOfDay { todHour=0, todMin=0, todSec=0, todNSec=ns }}
              in maybe (-1) timeGetNanoSeconds mtime === ns
-        , testProperty "correctly prints microseconds" $ \(us :: Int64) -> let
+        , testProperty "correctly prints microseconds" $ \(us' :: Int64) -> let
+             us = abs us' `mod` 1000000
              time = DateTime { dtTime = TimeOfDay { todHour=0, todMin=0, todSec=0, todNSec = NanoSeconds $ 1000*us }}
              out = timePrint [Format_MicroSecond] time
              pad6 s = replicate (6 - length s) '0' ++ s
