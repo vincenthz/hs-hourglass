@@ -194,7 +194,7 @@ printWith fmt tzOfs@(TimezoneOffset tz) t = concatMap fmtToString fmtElems
         fmtToString Format_Second   = pad2 (fromIntegral (todSec tm) :: Int)
         fmtToString Format_MilliSecond = padN 3 (ns `div` 1000000)
         fmtToString Format_MicroSecond = padN 3 ((ns `div` 1000) `mod` 1000)
-        fmtToString Format_NanoSecond = padN 3 (ns `mod` 1000)
+        fmtToString Format_NanoSecond = padN 9 (ns `mod` 1000000000)
         fmtToString (Format_Precision n)
             | n >= 1 && n <= 9 = padN n (ns `div` (10 ^ (9 - n)))
             | otherwise        = error "invalid precision format"
