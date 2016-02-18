@@ -211,6 +211,9 @@ tests knowns = testGroup "hourglass"
                 _                     -> error "Cannot parse timezone"
         , testProperty "custom-1" $ test_property_format ("YYYY-MM-DDTH:MI:S.msusns" :: String)
         , testProperty "custom-2" $ test_property_format ("Mon DD\\t\\h YYYY at HH\\hMI\\mS\\s.p9\\n\\s" :: String)
+        , testProperty "correctly parses microseconds" $ \(us :: Int64) -> (100000 <= us && us < 1000000) ==> let
+             mtime = timeParse [Format_MicroSecond] $ show us
+             in maybe (-1) timeGetNanoSeconds mtime === NanoSeconds (1000 * us)
         , testProperty "correctly parses nanoseconds" $ \(ns :: NanoSeconds) -> let
              mtime = timeParse [Format_NanoSecond] $ show ns
              in maybe (-1) timeGetNanoSeconds mtime === ns
