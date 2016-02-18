@@ -211,12 +211,13 @@ tests knowns = testGroup "hourglass"
                 _                     -> error "Cannot parse timezone"
         , testProperty "custom-1" $ test_property_format ("YYYY-MM-DDTH:MI:S.msusns" :: String)
         , testProperty "custom-2" $ test_property_format ("Mon DD\\t\\h YYYY at HH\\hMI\\mS\\s.p9\\n\\s" :: String)
-        , testProperty "correctly parses nanoseconds" $ \(ns :: Int64) -> (100000000<=ns && ns<1000000000) ==> let
+        , testProperty "correctly parses nanoseconds" $ \(ns :: NanoSeconds) -> let
              mtime = timeParse [Format_NanoSecond] $ show ns
-             in maybe (-1) timeGetNanoSeconds mtime === NanoSeconds ns
-        , testProperty "correctly prints nanoseconds" $ \(ns :: Int64) -> (100000000<=ns && ns<1000000000) ==>let
-             time = DateTime { dtTime = TimeOfDay { todHour=0, todMin=0, todSec=0, todNSec = NanoSeconds ns }}
-             in timePrint [Format_NanoSecond] time === show ns
+             in maybe (-1) timeGetNanoSeconds mtime === ns
+        , testProperty "correctly prints nanoseconds" $ \(ns :: NanoSeconds) -> let
+             time = DateTime { dtTime = TimeOfDay { todHour=0, todMin=0, todSec=0, todNSec = ns }}
+             NanoSeconds int = ns
+             in timePrint [Format_NanoSecond] time === show int
         ]
     ]
   where toCalendarTest (i, (us, dt)) =
