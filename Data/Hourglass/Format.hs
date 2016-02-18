@@ -281,7 +281,7 @@ localTimeParseE fmt timeString = loop ini fmtElems timeString
         processOne acc Format_MilliSecond s =
             onSuccess (\ms -> modTime (setNsMask (6,3) ms) acc) $ getNDigitNum 3 s
         processOne acc Format_MicroSecond s =
-            onSuccess (\us -> modTime (setNsMask (3,3) us) acc) $ getNDigitNum 3 s
+            onSuccess (\us -> modTime (setNsMask (3,6) us) acc) $ getNDigitNum 6 s
         processOne acc Format_NanoSecond s =
             onSuccess (\ns -> modTime (setNsMask (0,9) ns) acc) $ getNDigitNum 9 s
         processOne acc (Format_Precision p) s =
