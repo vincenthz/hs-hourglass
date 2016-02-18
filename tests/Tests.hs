@@ -220,7 +220,9 @@ tests knowns = testGroup "hourglass"
         , testProperty "correctly prints nanoseconds" $ \(ns :: NanoSeconds) -> let
              time = DateTime { dtTime = TimeOfDay { todHour=0, todMin=0, todSec=0, todNSec = ns }}
              NanoSeconds int = ns
-             in timePrint [Format_NanoSecond] time === show int
+             out = timePrint [Format_NanoSecond] time
+             pad9 s = replicate (9 - length s) '0' ++ s
+             in out === pad9 (show int) .&&. length out === 9
         ]
     ]
   where toCalendarTest (i, (us, dt)) =
