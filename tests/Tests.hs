@@ -51,6 +51,15 @@ dateEqual localtime utcTime =
        (h' , mi') = dt' `divMod` 60
        (DateTime (Date y m d) (TimeOfDay h mi sec _)) = localTimeToGlobal localtime
 
+-- | The @Date@ type is able to represent some values that aren't actually legal,
+-- specifically dates with a day field outside of the range of dates in the
+-- month. This function validates a @Date@. It is conservative; it only verifies
+-- that the day is less than 31. TODO: It would be nice to tighten this up a
+-- bit. There's a daysInMonth function we could use for this,
+-- but Data.Hourglass.Calendar, but it isn't exposed.
+isValidDate :: Date -> Bool
+isValidDate (Date _ _ d) = d > 0 && d <= 31
+
 -- windows native functions to convert time cannot handle time before year 1601
 #ifdef WINDOWS
 loElapsed = -11644473600 -- ~ year 1601
@@ -183,6 +192,8 @@ tests knowns = testGroup "hourglass"
                 (toEnum ((fromEnum m+1) `mod` 12) `eq` m')        &&
                 (if m == December then (y+1) `eq` y' else y `eq` y')
                 -}
+        , testProperty "dateAddPeriod" $ (\date period ->
+            isValidDate (date `dateAddPeriod` period))
         ]
     , testGroup "formating"
         [ testProperty "iso8601 date" $ \(e :: Elapsed) ->
