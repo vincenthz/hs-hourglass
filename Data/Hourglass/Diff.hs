@@ -86,6 +86,12 @@ dateAddPeriod (Date yOrig mOrig dOrig) (Period yDiff mDiff dDiff) =
   where
     (yDiffAcc,mStartPos) = (fromEnum mOrig + mDiff) `divMod` 12
     loop y m d
+        | d <= 0 =
+            let (m', y') = if m == 0
+                then (11, y - 1)
+                else (m - 1, y)
+            in
+            loop y' m' (daysInMonth y' (toEnum m') + d)
         | d <= dMonth = Date y (toEnum m) d
         | otherwise  =
             let newDiff = d - dMonth
