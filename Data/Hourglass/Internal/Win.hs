@@ -63,7 +63,7 @@ systemGetTimezone :: IO TimezoneOffset
 systemGetTimezone = do
     (tzMode,tzInfo) <- getTimeZoneInformation
     case tzMode of
-        TzIdDayLight -> return $ toTO (tziBias tzInfo + tziDaylightBias tzInfo)
+        TzIdDaylight -> return $ toTO (tziBias tzInfo + tziDaylightBias tzInfo)
         TzIdStandard -> return $ toTO (tziBias tzInfo + tziStandardBias tzInfo)
         TzIdUnknown  -> return $ toTO (tziBias tzInfo)
   where
