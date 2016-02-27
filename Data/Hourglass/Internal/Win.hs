@@ -61,9 +61,16 @@ dateTimeFromUnixEpoch e = toDateTime $ callSystemTime e
 
 systemGetTimezone :: IO TimezoneOffset
 systemGetTimezone = do
-    (_,tzInfo) <- getTimeZoneInformation
-    return $ TimezoneOffset $ getTzOffset tzInfo
-  where getTzOffset tzInfo = fromIntegral (tziBias tzInfo - tziDaylightBias tzInfo)
+    (tzMode,tzInfo) <- getTimeZoneInformation
+    case tzMode of
+        TzIdDayLight -> return $ toTO (tziBias tzInfo + tziDaylightBias tzInfo)
+        TzIdStandard -> return $ toTO (tziBias tzInfo + tziStandardBias tzInfo)
+        TzIdUnknown  -> return $ toTO (tziBias tzInfo)
+  where
+    -- a negative value represent value how to go from local to UTC,
+    -- whereas TimezoneOffset represent the offset to go from UTC to local.
+    -- here we negate the bias to get the proper value represented.
+    toTO = TimezoneOffset . fromIntegral . negate
 
 systemGetElapsedP :: IO ElapsedP
 systemGetElapsedP = toElapsedP `fmap` getSystemTimeAsFileTime
