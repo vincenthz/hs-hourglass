@@ -37,4 +37,4 @@ import Data.Hourglass.Format
 import Data.Hourglass.Types
 import Data.Hourglass.Local
 import Data.Hourglass.Zone
-import Data.Hourglass.Calendar (isLeapYear, getWeekDay, getDayOfTheYear)
+import Data.Hourglass.Calendar (isLeapYear, getWeekDay, getDayOfTheYear, daysInMonth)
