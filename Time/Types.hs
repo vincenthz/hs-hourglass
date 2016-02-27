@@ -181,7 +181,7 @@ data WeekDay =
     | Saturday
     deriving (Show,Read,Eq,Ord,Enum,Data,Typeable,Bounded)
 
--- | Offset against UTC in minutes
+-- | Offset against UTC in minutes to obtain from UTC time, local time.
 --
 -- * a positive number represent a location East of UTC.
 --
@@ -191,6 +191,11 @@ data WeekDay =
 -- LocalTime t (+480) = t represent a time at UTC+8
 --
 -- should be between -11H and +14H
+--
+-- Example:
+--    in AUSEDT (UTC+1000 with daylight = UTC+1100), local time is 15:47;
+--    Thus, UTC time is 04:47, and TimezoneOffset is +660 (minutes)
+--
 newtype TimezoneOffset = TimezoneOffset
     { timezoneOffsetToMinutes :: Int -- ^ return the number of minutes
     } deriving (Eq,Ord,Data,Typeable,NFData)
