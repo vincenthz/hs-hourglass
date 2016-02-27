@@ -30,6 +30,7 @@ module Data.Hourglass
     , isLeapYear
     , getWeekDay
     , getDayOfTheYear
+    , daysInMonth
     ) where
 
 import Data.Hourglass.Time
