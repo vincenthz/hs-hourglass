@@ -53,12 +53,9 @@ dateEqual localtime utcTime =
 
 -- | The @Date@ type is able to represent some values that aren't actually legal,
 -- specifically dates with a day field outside of the range of dates in the
--- month. This function validates a @Date@. It is conservative; it only verifies
--- that the day is less than 31. TODO: It would be nice to tighten this up a
--- bit. There's a daysInMonth function we could use for this,
--- but Data.Hourglass.Calendar, but it isn't exposed.
+-- month. This function validates a @Date@.
 isValidDate :: Date -> Bool
-isValidDate (Date _ _ d) = d > 0 && d <= 31
+isValidDate (Date y m d) = d > 0 && d <= (daysInMonth y m)
 
 -- windows native functions to convert time cannot handle time before year 1601
 #ifdef WINDOWS
@@ -105,9 +102,10 @@ instance Arbitrary Month where
 instance Arbitrary DateTime where
     arbitrary = DateTime <$> arbitrary <*> arbitrary
 instance Arbitrary Date where
-    arbitrary = Date <$> choose dateRange
-                     <*> arbitrary
-                     <*> choose (1,28)
+    arbitrary = do
+        year <- choose dateRange
+        month <- arbitrary
+        Date year month <$> choose (1, daysInMonth year month)
 instance Arbitrary TimeOfDay where
     arbitrary = TimeOfDay <$> (Hours <$> choose (0,23))
                           <*> (Minutes <$> choose (0,59))
@@ -192,6 +190,10 @@ tests knowns = testGroup "hourglass"
                 (toEnum ((fromEnum m+1) `mod` 12) `eq` m')        &&
                 (if m == December then (y+1) `eq` y' else y `eq` y')
                 -}
+
+        -- Make sure our Arbitrary instance only generates valid dates:
+        , testProperty "Arbitrary-isValidDate" isValidDate
+
         , testProperty "dateAddPeriod" $ (\date period ->
             isValidDate (date `dateAddPeriod` period))
         ]
