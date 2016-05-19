@@ -44,7 +44,7 @@ import Data.Int
 import Data.Data
 import Data.Ratio
 import Control.DeepSeq
-import Data.Hourglass.Utils (pad2)
+import Data.Hourglass.Utils (pad2, padN)
 
 -- | Represent any time interval that has an
 -- equivalent value to a number of seconds.
@@ -57,7 +57,7 @@ newtype NanoSeconds = NanoSeconds Int64
     deriving (Read,Eq,Ord,Num,Data,Typeable,NFData)
 
 instance Show NanoSeconds where
-    show (NanoSeconds v) = shows v "ns"
+    show (NanoSeconds v) = padN 9 v ++ "ns"
 
 instance TimeInterval NanoSeconds where
     toSeconds (NanoSeconds ns) = Seconds (ns `div` 1000000000)
@@ -75,7 +75,7 @@ newtype Seconds = Seconds Int64
     deriving (Read,Eq,Ord,Enum,Num,Real,Integral,Data,Typeable,NFData)
 
 instance Show Seconds where
-    show (Seconds s) = shows s "s"
+    show (Seconds s) = pad2 s ++ "s"
 
 instance TimeInterval Seconds where
     toSeconds   = id
@@ -86,7 +86,7 @@ newtype Minutes = Minutes Int64
     deriving (Read,Eq,Ord,Enum,Num,Real,Integral,Data,Typeable,NFData)
 
 instance Show Minutes where
-    show (Minutes s) = shows s "m"
+    show (Minutes m) = pad2 m ++ "m"
 
 instance TimeInterval Minutes where
     toSeconds (Minutes m)   = Seconds (m * 60)
@@ -98,7 +98,7 @@ newtype Hours = Hours Int64
     deriving (Read,Eq,Ord,Enum,Num,Real,Integral,Data,Typeable,NFData)
 
 instance Show Hours where
-    show (Hours s) = shows s "h"
+    show (Hours h) = pad2 h ++ "h"
 
 instance TimeInterval Hours where
     toSeconds (Hours h)     = Seconds (h * 3600)
