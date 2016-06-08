@@ -54,6 +54,12 @@ instance (Ord t, Time t) => Ord (LocalTime t) where
 
 instance Functor LocalTime where
     fmap f (LocalTime t tz) = LocalTime (f t) tz
+instance Time t => Timeable (LocalTime t) where
+    timeGetElapsedP    = timeGetElapsedP    . localTimeToGlobal
+    timeGetElapsed     = timeGetElapsed     . localTimeToGlobal
+    timeGetNanoSeconds = timeGetNanoSeconds . localTimeToGlobal
+instance Time t => Time (LocalTime t) where
+    timeFromElapsedP = localTimeFromGlobal . timeFromElapsedP
 
 -- | Create a local time type from a timezone and a time type.
 --
