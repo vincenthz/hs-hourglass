@@ -61,6 +61,7 @@ data TimeFormatElem =
     | Format_Precision Int -- ^ sub seconds display with a precision of N digits. with N between 1 and 9
     | Format_TimezoneName   -- ^ timezone name (e.g. GMT, PST). not implemented yet
     -- | Format_TimezoneOffset -- ^ timeoffset offset (+02:00)
+    | Format_TzHM_Colon_Z -- ^ zero UTC offset (Z) or timeoffset with colon (+02:00)
     | Format_TzHM_Colon -- ^ timeoffset offset with colon (+02:00)
     | Format_TzHM       -- ^ timeoffset offset (+0200)
     | Format_Tz_Offset  -- ^ timeoffset in minutes
@@ -153,7 +154,7 @@ instance TimeFormat ISO8601_DateAndTime where
         [Format_Year,dash,Format_Month2,dash,Format_Day2 -- date
         ,Format_Text 'T'
         ,Format_Hour,colon,Format_Minute,colon,Format_Second -- time
-        ,Format_TzHM_Colon -- timezone offset with colon +HH:MM
+        ,Format_TzHM_Colon_Z -- zero UTC offset (Z) or timezone offset with colon +HH:MM
         ]
       where dash = Format_Text '-'
             colon = Format_Text ':'
@@ -202,6 +203,9 @@ printWith fmt tzOfs@(TimezoneOffset tz) t = concatMap fmtToString fmtElems
         fmtToString Format_TimezoneName   = "" --
         fmtToString Format_Tz_Offset = show tz
         fmtToString Format_TzHM = show tzOfs
+        fmtToString Format_TzHM_Colon_Z
+            | tz == 0   = "Z"
+            | otherwise = fmtToString Format_TzHM_Colon
         fmtToString Format_TzHM_Colon =
             let (tzH, tzM) = abs tz `divMod` 60
                 sign = if tz < 0 then "-" else "+"
@@ -290,6 +294,9 @@ localTimeParseE fmt timeString = loop ini fmtElems timeString
             onSuccess (\sec ->
                 let newDate = dateTimeFromUnixEpochP $ flip ElapsedP 0 $ Elapsed $ Seconds sec
                  in modDT (const newDate) acc) $ isNumber s
+        processOne acc Format_TzHM_Colon_Z a@(c:s)
+            | c == 'Z'  = Right (acc, s)
+            | otherwise = processOne acc Format_TzHM_Colon a
         processOne acc Format_TzHM_Colon (c:s) =
             parseHMSign True acc c s
         processOne acc Format_TzHM (c:s) =
