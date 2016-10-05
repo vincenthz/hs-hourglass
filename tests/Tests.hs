@@ -224,6 +224,12 @@ tests knowns = testGroup "hourglass"
         , testProperty "custom-1" $ test_property_format ("YYYY-MM-DDTH:MI:S.msusns" :: String)
         , testProperty "custom-2" $ test_property_format ("Mon DD\\t\\h YYYY at HH\\hMI\\mS\\s.p9\\n\\s" :: String)
         ]
+    , testGroup "Regression Tests"
+        [ testCase  "Real instance of ElapsedP (#33)" $
+            let res = toRational (ElapsedP (Elapsed $ Seconds 0) (NanoSeconds 0))
+                ref = toRational 0 :: Rational
+             in assertEqual "failed equality" ref res
+        ]
     ]
   where toCalendarTest (i, (us, dt)) =
             testCase (show i) (dt @=? timeGetDateTimeOfDay us)
