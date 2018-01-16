@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 -- |
 -- Module      : Time.System
 -- License     : BSD-style
@@ -20,7 +21,9 @@ module Time.System
     , timezoneCurrent
     ) where
 
+#if !(MIN_VERSION_base(4,10,0))
 import Control.Applicative
+#endif
 import Time.Types
 import Data.Hourglass.Time
 import Data.Hourglass.Local

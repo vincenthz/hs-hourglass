@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 -- |
 -- Module      : Data.Hourglass.Diff
@@ -19,7 +20,10 @@ module Data.Hourglass.Diff
     ) where
 
 import Data.Data
+#if !(MIN_VERSION_base(4,10,0))
 import Data.Monoid
+#endif
+import Data.Semigroup
 import Data.Hourglass.Types
 import Data.Hourglass.Calendar
 import Control.DeepSeq
@@ -38,10 +42,12 @@ data Period = Period
 
 instance NFData Period where
     rnf (Period y m d) = y `seq` m `seq` d `seq` ()
+instance Semigroup Period where
+    (<>) (Period y1 m1 d1) (Period y2 m2 d2) =
+        Period (y1+y2) (m1+m2) (d1+d2)
 instance Monoid Period where
     mempty = Period 0 0 0
-    mappend (Period y1 m1 d1) (Period y2 m2 d2) =
-        Period (y1+y2) (m1+m2) (d1+d2)
+    mappend = (<>)
 
 -- | An amount of time in terms of constant value like hours (3600 seconds),
 -- minutes (60 seconds), seconds and nanoseconds.
@@ -54,10 +60,12 @@ data Duration = Duration
 
 instance NFData Duration where
     rnf (Duration h m s ns) = h `seq` m `seq` s `seq` ns `seq` ()
+instance Semigroup Duration where
+    (<>) (Duration h1 m1 s1 ns1) (Duration h2 m2 s2 ns2) =
+        Duration (h1+h2) (m1+m2) (s1+s2) (ns1+ns2)
 instance Monoid Duration where
     mempty = Duration 0 0 0 0
-    mappend (Duration h1 m1 s1 ns1) (Duration h2 m2 s2 ns2) =
-        Duration (h1+h2) (m1+m2) (s1+s2) (ns1+ns2)
+    mappend = (<>)
 instance TimeInterval Duration where
     fromSeconds s = (durationNormalize (Duration 0 0 s 0), 0)
     toSeconds d   = fst $ durationFlatten d
