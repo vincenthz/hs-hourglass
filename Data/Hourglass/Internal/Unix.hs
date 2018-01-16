@@ -21,7 +21,9 @@ module Data.Hourglass.Internal.Unix
     , systemGetElapsedP
     ) where
 
+#if !(MIN_VERSION_base(4,10,0))
 import Control.Applicative
+#endif
 import Foreign.C.Types
 import Foreign.Storable
 import Foreign.Marshal.Alloc
