@@ -2,7 +2,7 @@
 {-# LANGUAGE BangPatterns #-}
 module Main (main) where
 
-import Criterion.Main
+import Gauge.Main
 import Data.Hourglass
 import System.Hourglass
 import TimeDB
