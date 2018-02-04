@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 -- |
 -- Module      : Data.Hourglass.Diff
@@ -38,6 +39,11 @@ data Period = Period
 
 instance NFData Period where
     rnf (Period y m d) = y `seq` m `seq` d `seq` ()
+#if (MIN_VERSION_base(4,11,0))
+instance Semigroup Period where
+    (<>) (Period y1 m1 d1) (Period y2 m2 d2) =
+        Period (y1+y2) (m1+m2) (d1+d2)
+#endif
 instance Monoid Period where
     mempty = Period 0 0 0
     mappend (Period y1 m1 d1) (Period y2 m2 d2) =
@@ -54,6 +60,11 @@ data Duration = Duration
 
 instance NFData Duration where
     rnf (Duration h m s ns) = h `seq` m `seq` s `seq` ns `seq` ()
+#if (MIN_VERSION_base(4,11,0))
+instance Semigroup Duration where
+    (<>) (Duration h1 m1 s1 ns1) (Duration h2 m2 s2 ns2) =
+        Duration (h1+h2) (m1+m2) (s1+s2) (ns1+ns2)
+#endif
 instance Monoid Duration where
     mempty = Duration 0 0 0 0
     mappend (Duration h1 m1 s1 ns1) (Duration h2 m2 s2 ns2) =
