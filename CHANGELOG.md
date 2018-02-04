@@ -1,3 +1,19 @@
+## Version 0.2.11 (2018-02-04)
+
+- Add Zero UTC
+- Avoid division by 0
+- Add support for ghc-8.4 alpha2
+
+## Version 0.2.10 (2016-02-27)
+
+- Move towards Time. hierarchy
+- Add some test
+- Fix some issues
+
+## Version 0.2.9 (2015-04-01)
+
+- some tidy up
+
 ## Version 0.2.8 (2015-01-07)
 
 - Fix test with time 1.5
