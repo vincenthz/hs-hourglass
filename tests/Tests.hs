@@ -10,6 +10,7 @@ import Test.Tasty
 import Test.Tasty.QuickCheck
 import Test.Tasty.HUnit
 
+import Data.Ratio
 import Data.Word
 import Data.Int
 import Data.Hourglass
@@ -228,6 +229,10 @@ tests knowns = testGroup "hourglass"
         [ testCase  "Real instance of ElapsedP (#33)" $
             let res = toRational (ElapsedP (Elapsed $ Seconds 0) (NanoSeconds 0))
                 ref = toRational 0 :: Rational
+             in assertEqual "failed equality" ref res
+        , testCase  "Real instance of ElapsedP (#33) (2)" $
+            let res = toRational (ElapsedP (Elapsed $ Seconds 100) (NanoSeconds 1000000))
+                ref = toRational 100 + (1 % 1000) :: Rational
              in assertEqual "failed equality" ref res
         ]
     ]

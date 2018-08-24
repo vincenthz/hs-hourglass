@@ -148,11 +148,10 @@ subElapsedP (ElapsedP e1 (NanoSeconds ns1)) (ElapsedP e2 (NanoSeconds ns2)) =
     oneSecond = Elapsed $ Seconds 1
 
 instance Real ElapsedP where
-    -- FIXME
     toRational (ElapsedP (Elapsed (Seconds s)) (NanoSeconds 0)) =
         fromIntegral s
     toRational (ElapsedP (Elapsed (Seconds s)) (NanoSeconds ns)) =
-        fromIntegral s + (1000000000 % fromIntegral ns)
+        fromIntegral s + (fromIntegral ns % 1000000000)
 
 -- | Month of the year
 data Month =
