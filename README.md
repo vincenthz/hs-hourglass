@@ -21,7 +21,7 @@ For example:
 let dateTime0 =
       DateTime { dtDate = Date { dateYear = 1970, dateMonth = January, dateDay = 1 }
                , dtTime = TimeOfDay {todHour = 0, todMin = 0, todSec = 0, todNSec = 0 }}
-    elapsed0 = Elasped 0
+    elapsed0 = Elapsed 0
 
 > timeGetElapsed elapsed0 == timeGetElapsed dateTime0
 True
