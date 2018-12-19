@@ -59,11 +59,11 @@ ptime <- timeCurrent
 import Data.Time.Clock
 import Data.Time.Calendar
 
-currentYear <- (\(y,_,_) -> y) . toGregorian . utcDay <$> getCurrentTime
+currentYear <- (\(y,_,_) -> y) . toGregorian . utctDay <$> getCurrentTime
 
 -- With hourglass
 import System.Hourglass
-import Data.Time
+import Data.Hourglass
 
 currentYear <- dateYear . timeGetDate <$> timeCurrent
 ```
@@ -72,14 +72,14 @@ currentYear <- dateYear . timeGetDate <$> timeCurrent
 ```haskell
 -- With time
 import Data.Time.Clock
-import Date.Time.Calendar
+import Data.Time.Calendar
 
 let day = fromGregorian 1970 5 4
     diffTime = secondsToDiffTime (15 * 3600 + 12 * 60 + 24)
 in UTCTime day diffTime
 
 -- With hourglass
-import Date.Time
+import Data.Hourglass
 
 DateTime (Date 1970 May 4) (TimeOfDay 15 12 24 0)
 ```
