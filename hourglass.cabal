@@ -1,5 +1,5 @@
 Name:                hourglass
-Version:             0.2.10
+Version:             0.2.12
 Synopsis:            simple performant time related library
 Description:
     Simple time library focusing on simple but powerful and performant API
@@ -20,7 +20,6 @@ Homepage:            https://github.com/vincenthz/hs-hourglass
 Cabal-Version:       >=1.10
 extra-source-files:  README.md
                   ,  CHANGELOG.md
-                  ,  tests/TimeDB.hs
 
 Library
   Exposed-modules:   Time.Types
@@ -55,6 +54,7 @@ Test-Suite test-hourglass
   type:              exitcode-stdio-1.0
   hs-source-dirs:    tests
   Main-is:           Tests.hs
+  Other-modules:     TimeDB
   Build-Depends:     base >= 3 && < 5
                    , mtl
                    , tasty
@@ -73,6 +73,7 @@ Test-Suite test-hourglass
 Benchmark bench-hourglass
   hs-source-dirs:    tests
   Main-Is:           Bench.hs
+  Other-modules:     TimeDB
   type:              exitcode-stdio-1.0
   Default-Language:  Haskell2010
   Build-depends:     base >= 4 && < 5
